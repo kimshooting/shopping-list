@@ -52,7 +52,8 @@ async function readDirectoryAndMoveTo(navigation, dir, key, where) {
   try {
     const files = await StorageAccessFramework.readDirectoryAsync(dir);
     navigation.navigate(where, {
-      data:files
+      data:files,
+      dir: dir,
     });
   } catch (err) {
     const getPermission = async () => {

@@ -116,13 +116,6 @@ getInfoAsync(WORK_IMAGE_DIRECTORY)
       }
     });
 
-getInfoAsync(SHARED_DATA_ROOT_DIRECTORY)
-    .then((result) => {
-      if (!result.exists) {
-        makeDirectoryAsync(SHARED_DATA_ROOT_DIRECTORY, { intermediates: true });
-      }
-    });
-
 function App() {
   return (
     <Provider store={ store }>

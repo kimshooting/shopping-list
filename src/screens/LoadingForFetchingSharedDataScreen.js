@@ -4,9 +4,10 @@ import { StorageAccessFramework, deleteAsync, documentDirectory, getInfoAsync, m
 import { db } from '../App';
 
 function LoadingForFetchingSharedDataScreen({ route, navigation }) {
-  const files = route.params.data;
-
-  procedure(files, navigation);
+  const dir = route.params.dir;
+  
+  // readDirectoryAsync(documentDirectory + 'shared_data_dir/image').then((result) => console.log(result));
+  procedure(dir, navigation);
 
   return(
     <View style={ { flex: 1, alignItems: 'center', justifyContent: 'center' } }>
@@ -15,37 +16,39 @@ function LoadingForFetchingSharedDataScreen({ route, navigation }) {
   )
 }
 
-async function procedure(files, navigation) {
-  await copyFiles(files);
-  const metadata = JSON.parse(await processManagementFile());
-  const circleData = JSON.parse(await processData(metadata.circle_data_file));
-  const workData = JSON.parse(await processData(metadata.work_data_file));
+async function procedure(dir, navigation) {
+  const rootDirectory = documentDirectory + dir.split('%2F').pop() + '/';
+  await copyFiles(dir);
+  const metadata = JSON.parse(await processManagementFile(rootDirectory));
+  const circleData = JSON.parse(await processData(rootDirectory, metadata.circle_data_file));
+  const workData = JSON.parse(await processData(rootDirectory, metadata.work_data_file));
   for (let data of circleData) {
-    data.circle_image_path = SHARED_DATA_ROOT_DIRECTORY + data.circle_image_path;
+    data.circle_image_path = rootDirectory + data.circle_image_path;
+    console.log(data.circle_image_path);
   }
+  console.log('--------------------');
   for (let data of workData) {
-    data.image_path = SHARED_DATA_ROOT_DIRECTORY + data.image_path;
+    data.image_path = rootDirectory + data.image_path;
+    console.log(data.image_path);
   }
   await dbTask(circleData, REGISTERED_TABLE);
   await dbTask(workData, WORK_TABLE);
   navigation.goBack();
 }
 
-async function copyFiles(files) {
-  for (let file of files) {
-    await StorageAccessFramework.copyAsync({
-      from: file,
-      to: SHARED_DATA_ROOT_DIRECTORY
-    });
-  }
+async function copyFiles(dir) {
+  await StorageAccessFramework.copyAsync({
+    from: dir,
+    to: documentDirectory
+  });
 }
 
-async function processManagementFile() {
-  return await readAsStringAsync(SHARED_DATA_ROOT_DIRECTORY + SHARED_DATA_MANAGEMENT_FILENAME);
+async function processManagementFile(rootDirectory) {
+  return await readAsStringAsync(rootDirectory + SHARED_DATA_MANAGEMENT_FILENAME);
 }
 
-async function processData(filename) {
-  return await readAsStringAsync(`${ SHARED_DATA_ROOT_DIRECTORY }${ filename }`);
+async function processData(rootDirectory, filename) {
+  return await readAsStringAsync(`${ rootDirectory }${ filename }`);
 }
 
 async function dbTask(data, table) {
