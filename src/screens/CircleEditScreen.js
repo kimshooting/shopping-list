@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, FlatList, Image, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Button, FlatList, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { db } from '../App';
 import { CIRCLE_PARTICIPATE_TABLE, DEFAULT_IMAGE, PRIORITY_TABLE, REGISTERED_TABLE, WORK_REGISTERED_TABLE, WORK_TABLE } from '../data/metadata';
 import { RadioButton } from 'react-native-paper';
@@ -27,10 +27,11 @@ function CircleEditScreen({ route, navigation }) {
 
     await db.transaction((tx) => {
       tx.executeSql(`
-        SELECT w.id, w.title, w.checked, w.image_path,
-               w.priority, w.price
-        FROM ${ WORK_TABLE } AS w
-        INNER JOIN ${ CIRCLE_PARTICIPATE_TABLE } AS p ON p.id = w.id;
+        SELECT id, title, checked, image_path,
+               priority, price
+        FROM ${ WORK_TABLE }
+        WHERE circle_id = ${ dataFromPrevious.circle_id }
+        ORDER BY priority;
       `, [ ], (tx, result) => {
         const len = result.rows.length;
         const data = [ ];
@@ -72,6 +73,10 @@ function CircleEditScreen({ route, navigation }) {
           })
         }
       </View>
+      <Button
+          color='#c92a2a'
+          title='서클 삭제'
+          onPress={() => console.log('Delete') } />
       <Button title='작품 추가' onPress={ () => navigation.navigate('AddWork', { data: dataFromPrevious }) } />
       <FlatList
           style={ styles.workContainerList }
@@ -79,15 +84,6 @@ function CircleEditScreen({ route, navigation }) {
           renderItem={ ({ item }) => <WorkItem data={ item } colorSet={ prioritySet } /> }
           keyExtractor={ (item) => item.id } />
     </SafeAreaView>
-  );
-}
-
-function Header({ data, colorSet }) {
-  return (
-    <View style={ styles.header }>
-      <Text>Here</Text>
-      <Button title='완료' />
-    </View>
   );
 }
 
@@ -128,7 +124,7 @@ function WorkItem({data, colorSet}) {
     backgroundColor: colorSet[data.priority - 1].color,
   }
   return (
-    <View style={ styles.workItem }>
+    <TouchableOpacity style={ styles.workItem }>
       <Image
           style={ styles.workImage }
           source={ imageSrc }
@@ -138,7 +134,7 @@ function WorkItem({data, colorSet}) {
         <Text style={ styles.text }>{ data.title }</Text>
         <Text style={ styles.text }>{ data.price }</Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
