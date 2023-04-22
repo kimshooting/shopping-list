@@ -7,6 +7,7 @@ import CircleSelectScreen from "../screens/CircleSelectScreen";
 import CircleEditScreen from "../screens/CircleEditScreen";
 import AddWorkScreen from "../screens/AddWorkScreen";
 import LoadingForFetchingSharedDataScreen from "../screens/LoadingForFetchingSharedDataScreen";
+import LoadingForCleanWholeDataScreen from "../screens/LoadingForCleanWholeDataScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -23,6 +24,9 @@ function StackRootContainer() {
         <Stack.Screen name='AddWork' component={ AddWorkScreen } />
         <Stack.Screen name='LoadingForFetchingSharedData'
             component={ LoadingForFetchingSharedDataScreen }
+            options={ { headerShown: false } } />
+        <Stack.Screen name='LoadingForCleanWholeData'
+            component={ LoadingForCleanWholeDataScreen }
             options={ { headerShown: false } } />
       </Stack.Navigator>
     </NavigationContainer>

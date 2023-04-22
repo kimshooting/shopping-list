@@ -5,9 +5,9 @@ import { Provider } from 'react-redux';
 import store from './data/store';
 import { getInfoAsync, makeDirectoryAsync } from 'expo-file-system';
 
-export const db = SQLite.openDatabase({name: 'my.db', location: 'default'}, () => onOpenDB(), (err) => console.error(err));
+export const db = SQLite.openDatabase({name: 'my.db', location: 'default'}, () => initApp(), (err) => console.error(err));
 
-async function onOpenDB() {
+export async function initApp() {
   console.log('succeeeded');
   await db.transaction((tx) => {
     tx.executeSql(`CREATE TABLE IF NOT EXISTS ${ METADATA_TABLE } (
@@ -84,37 +84,38 @@ async function onOpenDB() {
 
   await db.transaction((tx) => {
     tx.executeSql(`
-      DELETE FROM ${ PRIORITY_TABLE };
-    `, [ ], (tx, results) => {
-      tx.executeSql(`
-        INSERT INTO ${ PRIORITY_TABLE } (priority, title, color) VALUES
-          (1, '가장 중요', '#e03131'),
-          (2, '중요', '#ffa94d'),
-          (3, '덜 중요', '#1c7ed6'),
-          (4, '중요할지도', '#37b24d'),
-          (5, '계륵', '#868e96');
-      `, [ ], (tx, results) => console.log('success: inserted into priority'),
-      (err) => console.error(err));
+      SELECT * FROM ${ PRIORITY_TABLE };
+    `, [ ], (tx, result) => {
+      if (result.rows.length == 0) {
+        tx.executeSql(`
+          INSERT INTO ${ PRIORITY_TABLE } (priority, title, color) VALUES
+            (1, '가장 중요', '#e03131'),
+            (2, '중요', '#ffa94d'),
+            (3, '덜 중요', '#1c7ed6'),
+            (4, '중요할지도', '#37b24d'),
+            (5, '계륵', '#868e96');
+        `, [ ], (tx, result) => console.log('success: inserted into priority'),
+        (err) => console.error(err));
+      }
     }, (err) => {
       console.error(err);
     });
   });
-}
-
-getInfoAsync(CIRCLE_IMAGE_DIRECTORY)
+  getInfoAsync(CIRCLE_IMAGE_DIRECTORY)
     .then((result) => {
       if (!result.exists) {
         makeDirectoryAsync(CIRCLE_IMAGE_DIRECTORY, { intermediates: true });
       }
     });
 
-getInfoAsync(WORK_IMAGE_DIRECTORY)
+  getInfoAsync(WORK_IMAGE_DIRECTORY)
     .then((result) => {
       if (!result.exists) {
         makeDirectoryAsync(WORK_IMAGE_DIRECTORY, { intermediates: true })
             .then((result) => console.log('work image succeeded'));
       }
     });
+}
 
 function App() {
   return (

@@ -16,6 +16,10 @@ function SettingsScreen({ navigation }) {
       <Button 
           title='공유 데이터 가져오기'
           onPress={ () => fetchData(navigation, DIRECTORY_URI_FOR_FETCH_SHARED_DATA, 'LoadingForFetchingSharedData') } />
+      <Button
+          title='데이터 완전 삭제'
+          color='red'
+          onPress={ () => navigation.navigate('LoadingForCleanWholeData') } />
     </SafeAreaView>
   )
 }
