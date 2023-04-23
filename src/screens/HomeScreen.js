@@ -3,18 +3,16 @@ import { CIRCLE_PARTICIPATE_TABLE, CURRENT_ORDER, DEFAULT_IMAGE, METADATA_TABLE,
 import { db } from "../App";
 import { useEffect, useState } from "react";
 import HomeToolbar from "../toolbar/HomeToolbar";
-import { useDispatch, useSelector } from "react-redux";
-import { setCurrentOrderMode } from "../data/store";
+import { useSelector } from "react-redux";
 
 function HomeScreen({ navigation }) {
   const [ registeredCircleList, setRegisteredCircleList ] = useState([ ]);
   const currentOrderMode = useSelector((state) => state.currentOrderMode);
-  const dispatch = useDispatch();
 
-  const doDBTask = async() => {
-    const selectRecords = async () => {
+  const doDBTask = async () => {
+    const selectRecords = async (orderMode) => {
       let orderBySql = '';
-      switch (currentOrderMode) {
+      switch (parseInt(orderMode)) {
         case ORDER_BY_PRIORITY:
           orderBySql = 'ORDER BY pr.priority ASC;';
           break;
@@ -55,32 +53,28 @@ function HomeScreen({ navigation }) {
       });
     }
 
-    console.log('currentOrderMode', currentOrderMode);
-    if (currentOrderMode == 0) {
-      await db.transaction((tx) => {
-        tx.executeSql(`
-          SELECT * FROM ${ METADATA_TABLE }
-          WHERE key = '${ CURRENT_ORDER }';
-        `, [ ], (tx, result) => {
-          const len = result.rows.length;
-          console.log(len);
-          if (len == 0) {
-            tx.executeSql(`
-              INSERT INTO ${ METADATA_TABLE } (key, value) VALUES
-                ('${ CURRENT_ORDER }', '${ ORDER_BY_PRIORITY }');
-            `);
-            dispatch(setCurrentOrderMode(ORDER_BY_PRIORITY));
-          } else {
-            dispatch(setCurrentOrderMode(result.rows.item(0).value));
-          }
-        }, (err) => {
-          console.log(err);
-          navigation('Home');
-        });
+    await db.transaction((tx) => {
+      tx.executeSql(`
+        SELECT * FROM ${ METADATA_TABLE }
+        WHERE key = '${ CURRENT_ORDER }';
+      `, [ ], (tx, result) => {
+        console.log('hhhh');
+        const len = result.rows.length;
+        if (len == 0) {
+          tx.executeSql(`
+            INSERT INTO ${ METADATA_TABLE } (key, value) VALUES
+              ('${ CURRENT_ORDER }', ${ ORDER_BY_PRIORITY });
+          `);
+          selectRecords(ORDER_BY_PRIORITY);
+        } else {
+          console.log(result.rows.item(0).value);
+          selectRecords(result.rows.item(0).value);
+        }
+      }, (err) => {
+        console.log(err);
+        navigation('Home');
       });
-    } else {
-      selectRecords();
-    }
+    });
   };
 
   useEffect(() => {

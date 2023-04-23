@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Modal, Pressable, StyleSheet, Text, Touchable, TouchableOpacity, View } from 'react-native';
+import { Alert, Button, Modal, Pressable, StyleSheet, Text, Touchable, TouchableOpacity, View } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import { db } from '../App';
 import { CURRENT_ORDER, METADATA_TABLE, ORDER_BY_CIRCLE_NAME, ORDER_BY_PENNAME, ORDER_BY_PRIORITY, ORDER_BY_SPACE } from '../data/metadata';
@@ -20,7 +20,6 @@ function HomeToolbar() {
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => {
-          Alert.alert('Modal has been closed.');
           setModalVisible(!modalVisible);
         }}>
         <View style={styles.centeredView}>
@@ -68,13 +67,27 @@ function onListItemPress(setSelectedOrder, to) {
 }
 
 async function onOrderButtonPress(to, dispatch) {
-  console.log(to);
   await db.transaction((tx) => {
     tx.executeSql(`
-      UPDATE ${ METADATA_TABLE } SET value = '${ to }' WHERE key = '${ CURRENT_ORDER }';
-    `, [ ], (tx, result) => console.log('update completed'), (err) => console.error(err));
+      SELECT key, value FROM ${ METADATA_TABLE } 
+      WHERE key = '${ CURRENT_ORDER }';
+    `, [ ], async (tx, result) => {
+      if (result.rows.length == 0) {
+        console.log('INSERT');
+        await tx.executeSql(`
+          INSERT INTO ${ METADATA_TABLE } VALUES
+            ('${ CURRENT_ORDER }', ${ to });
+        `);
+      } else {
+        console.log('UPDATE');
+        await tx.executeSql(`
+          UPDATE ${ METADATA_TABLE } SET value = '${ to }' WHERE key = '${ CURRENT_ORDER }';
+        `);
+      }
+      console.log('dispatch');
+      dispatch(setCurrentOrderMode(Math.random()));
+    });
   });
-  dispatch(setCurrentOrderMode(to));
 }
 
 const styles = StyleSheet.create({

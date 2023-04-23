@@ -3,6 +3,7 @@ import { Button, FlatList, Image, SafeAreaView, StyleSheet, Text, TouchableOpaci
 import { db } from '../App';
 import { CIRCLE_PARTICIPATE_TABLE, DEFAULT_IMAGE, PRIORITY_TABLE, REGISTERED_TABLE, WORK_REGISTERED_TABLE, WORK_TABLE } from '../data/metadata';
 import { RadioButton } from 'react-native-paper';
+import { deleteAsync } from 'expo-file-system';
 
 function CircleEditScreen({ route, navigation }) {
   const dataFromPrevious = route.params.data;
@@ -74,9 +75,9 @@ function CircleEditScreen({ route, navigation }) {
         }
       </View>
       <Button
-          color='#c92a2a'
+          color='red'
           title='서클 삭제'
-          onPress={() => console.log('Delete') } />
+          onPress={() => onDelete(navigation, dataFromPrevious.circle_id, workList, setWorkList) } />
       <Button title='작품 추가' onPress={ () => navigation.navigate('AddWork', { data: dataFromPrevious }) } />
       <FlatList
           style={ styles.workContainerList }
@@ -136,6 +137,28 @@ function WorkItem({data, colorSet}) {
       </View>
     </TouchableOpacity>
   );
+}
+
+function onDelete(navigation, circle_id, workList) {
+  const deleteCircle = () => {
+    db.transaction((tx) => {
+      tx.executeSql(`
+        DELETE FROM ${ WORK_TABLE }
+        WHERE circle_id = ${ circle_id };
+      `, [ ], (tx, result) => {
+        for (work of workList) {
+          deleteAsync(work.image_path, { idempotent: true });
+        }
+        tx.executeSql(`
+          DELETE FROM ${ REGISTERED_TABLE }
+          WHERE circle_id = ${ circle_id };
+        `, [ ], (tx, result) => {
+          navigation.goBack();
+        });
+      }, (err) => console.error(err));
+    });
+  }
+  deleteCircle();
 }
 
 const styles = StyleSheet.create({
