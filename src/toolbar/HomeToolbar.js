@@ -33,7 +33,11 @@ function HomeToolbar() {
   const currentBudget = useSelector((state) => state.currentBudget);
   useEffect(() => {
     calculateCurrentBudget()
-        .then((result) => dispatch(setCurrentBudget(result)))  ;
+        .then((result) => dispatch(setCurrentBudget(result)))
+        .catch((err) => {
+          console.log(err);
+          dispatch(setCurrentBudget(0));
+        });
   }, [ ]);
 
   useEffect(() => {

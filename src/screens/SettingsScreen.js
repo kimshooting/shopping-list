@@ -27,6 +27,18 @@ function SettingsScreen({ navigation }) {
             ]);
           } } />
       <Button
+          title='데이터 공유'
+          onPress={ () => {
+            Alert.alert('', '등록된 서클 데이터, 작품 데이터를 zip 파일로 압축하여 공유합니다.', [
+              {
+                text: 'OK',
+                onPress: () => navigation.navigate('LoadingForExportingData')
+              }, {
+                text: 'Cancel'
+              }
+            ])
+          } } />
+      <Button
           title='데이터 완전 삭제'
           color='red'
           onPress={ () => {

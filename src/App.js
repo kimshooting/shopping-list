@@ -1,5 +1,5 @@
 import SQLite from 'react-native-sqlite-storage';
-import { CIRCLE_IMAGE_DIRECTORY, CIRCLE_PARTICIPATE_TABLE, METADATA_TABLE, PRIORITY_TABLE, REGISTERED_TABLE, SHARED_DATA_ROOT_DIRECTORY, WORK_IMAGE_DIRECTORY, WORK_TABLE } from './data/metadata';
+import { CIRCLE_IMAGE_DIRECTORY, CIRCLE_PARTICIPATE_TABLE, METADATA_TABLE, PRIORITY_TABLE, REGISTERED_TABLE, WORK_IMAGE_DIRECTORY, WORK_TABLE } from './data/metadata';
 import StackRootContainer from "./navcontainer/StackRootContainer";
 import { Provider } from 'react-redux';
 import store from './data/store';

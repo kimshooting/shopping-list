@@ -1,22 +1,25 @@
 import { Text, View } from 'react-native';
-import { REGISTERED_TABLE, SHARED_DATA_MANAGEMENT_FILENAME, SHARED_DATA_ROOT_DIRECTORY, WORK_TABLE } from '../data/metadata';
-import { StorageAccessFramework, deleteAsync, documentDirectory, getInfoAsync, makeDirectoryAsync, readAsStringAsync, readDirectoryAsync } from 'expo-file-system';
+import { REGISTERED_TABLE, SHARED_DATA_MANAGEMENT_FILENAME, WORK_TABLE } from '../data/metadata';
+import { StorageAccessFramework, documentDirectory, readAsStringAsync } from 'expo-file-system';
 import { db } from '../App';
+import { useDispatch } from 'react-redux';
+import { calculateCurrentBudget } from '../function/function';
+import { setCurrentBudget } from '../data/store';
 
 function LoadingForFetchingSharedDataScreen({ route, navigation }) {
   const dir = route.params.dir;
   
   // readDirectoryAsync(documentDirectory + 'shared_data_dir/image').then((result) => console.log(result));
-  procedure(dir, navigation);
+  procedure(dir, navigation, useDispatch());
 
   return(
     <View style={ { flex: 1, alignItems: 'center', justifyContent: 'center' } }>
-      <Text style={ { color: '#000' } }>LoadingForFetchingSharedData</Text>
+      <Text style={ { color: '#000' } }>데이터 가져오는 중</Text>
     </View>
   )
 }
 
-async function procedure(dir, navigation) {
+async function procedure(dir, navigation, dispatch) {
   const rootDirectory = documentDirectory + dir.split('%2F').pop() + '/';
   await copyFiles(dir);
   const metadata = JSON.parse(await processManagementFile(rootDirectory));
@@ -33,6 +36,7 @@ async function procedure(dir, navigation) {
   }
   await dbTask(circleData, REGISTERED_TABLE);
   await dbTask(workData, WORK_TABLE);
+  await calculateCurrentBudget().then((result) => dispatch(setCurrentBudget(result)));
   navigation.goBack();
 }
 

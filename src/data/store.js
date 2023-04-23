@@ -1,6 +1,4 @@
 import { configureStore, createSlice } from "@reduxjs/toolkit";
-import { ORDER_BY_PRIORITY } from "./metadata";
-import { calculateCurrentBudget } from "../function/function";
 
 const selectedCircle = createSlice({
   name: 'selectedCircle',

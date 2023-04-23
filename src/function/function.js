@@ -1,7 +1,7 @@
 import { db } from "../App";
 import { WORK_TABLE } from "../data/metadata";
 
-export async function calculateCurrentBudget(setBudget) {
+export async function calculateCurrentBudget() {
   return new Promise((resolve, reject) => {
     db.transaction(async (tx) => {
       await tx.executeSql(`
