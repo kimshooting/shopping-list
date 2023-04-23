@@ -75,7 +75,11 @@ function getSql(obj, table) {
   for (let ob of obj) {
     let value = '(';
     for (let key of ks) {
-      const quote = isNaN(ob[key]) ? '\'' : '';
+      let quote = '';
+      if (isNaN(ob[key])) {
+        quote = '\'';
+        ob[key] = ob[key].replace(`'`, `''`);
+      }
       value += `${ quote }${ ob[key] }${ quote },`;
     }
     values += value.substring(0, value.length - 1) + '),';

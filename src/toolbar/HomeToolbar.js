@@ -2,25 +2,42 @@ import { useEffect, useState } from 'react';
 import { Alert, Button, Modal, Pressable, StyleSheet, Text, Touchable, TouchableOpacity, View } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import { db } from '../App';
-import { CURRENT_ORDER, METADATA_TABLE, ORDER_BY_CIRCLE_NAME, ORDER_BY_PENNAME, ORDER_BY_PRIORITY, ORDER_BY_SPACE } from '../data/metadata';
+import { CURRENT_ORDER, METADATA_TABLE, ORDER_BY_CIRCLE_NAME, ORDER_BY_PENNAME, ORDER_BY_PRIORITY, ORDER_BY_SPACE, SEARCH_KEYWORD } from '../data/metadata';
 import { setCurrentOrderMode } from '../data/store';
 import { useDispatch } from 'react-redux';
 
+const MODES = {
+  by_circle: {
+    key: 60,
+    title: '서클명'
+  },
+  by_penname: {
+    key: 120,
+    title: '펜네임'
+  },
+  by_space: {
+    key: 180,
+    title: '서클위치'
+  }
+}
+
 function HomeToolbar() {
   const [ searchText, setSearchText ] = useState('');
-  const [ modalVisible, setModalVisible ] = useState(false);
+  const [ searchModalVisible, setSearchModalVisible ] = useState(false);
+  const [ orderModalVisible, setOrderModalVisible ] = useState(false);
   const dispatch = useDispatch();
 
   const [ selectedOrder, setSelectedOrder ] = useState(-1);
+  const [ searchMode, setSearchMode ] = useState(MODES.by_circle);
 
   return (
     <View style={ styles.container }>
       <Modal
         animationType='fade'
         transparent={true}
-        visible={modalVisible}
+        visible={orderModalVisible}
         onRequestClose={() => {
-          setModalVisible(!modalVisible);
+          setOrderModalVisible(!orderModalVisible);
         }}>
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
@@ -44,21 +61,60 @@ function HomeToolbar() {
                 style={ [styles.button, styles.buttonClose] }
                 onPress={() => {
                   onOrderButtonPress(selectedOrder, dispatch);
-                  setModalVisible(!modalVisible);
+                  setOrderModalVisible(!orderModalVisible);
                 }}>
               <Text style={styles.textStyle}>정렬</Text>
             </Pressable>
           </View>
         </View>
       </Modal>
+      <Modal
+        animationType='fade'
+        transparent={true}
+        visible={searchModalVisible}
+        onRequestClose={() => {
+          setSearchModalVisible(!searchModalVisible);
+        }}>
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <TouchableOpacity onPress={ () => {
+                  Alert.alert('', '', [
+                    {
+                      text: MODES.by_circle.title,
+                      onPress: () => setSearchMode(MODES.by_circle)
+                    },
+                    {
+                      text: MODES.by_penname.title,
+                      onPress: () => setSearchMode(MODES.by_penname)
+                    },
+                    {
+                      text: MODES.by_space.title,
+                      onPress: () => setSearchMode(MODES.by_space)
+                    }
+                  ]);
+                } }>
+              <Text style={ styles.modalText }>{ searchMode.title }(으)로 검색</Text>
+            </TouchableOpacity>
+            <TextInput style={ [ styles.modalText, { width: 150 } ] }
+                onChangeText={ (txt) => setSearchText(txt) }
+                value={ searchText } />
+            <Pressable
+                style={ [styles.button, styles.buttonClose] }
+                onPress={() => {
+                  onSearchButtonPress(searchMode, searchText, dispatch);
+                  setSearchModalVisible(false);
+                }}>
+              <Text style={styles.textStyle}>검색</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
       <Button
           title='검색'
-          onPress={ () => Alert.alert('asdf', 'asdf') } />
-      <TextInput style={ styles.searchText }
-          onChangeText={ (e) => setSearchText(e) } />
+          onPress={ () => setSearchModalVisible(true) } />
       <Button
           title='정렬 기준'
-          onPress={ () => setModalVisible(true) }  />
+          onPress={ () => setOrderModalVisible(true) }  />
     </View>
   );
 }
@@ -87,6 +143,46 @@ async function onOrderButtonPress(to, dispatch) {
       }
       console.log('dispatch');
       dispatch(setCurrentOrderMode(Math.random()));
+    });
+  });
+}
+
+function onSearchButtonPress(searchMode, searchText, dispatch) {
+  let sql = 'WHERE ';
+  switch (searchMode.key) {
+    case MODES.by_circle.key:
+      sql += 'p.circle_name LIKE ';
+      break;
+    case MODES.by_penname.key:
+      sql += 'p.penname LIKE ';
+      break;
+    case MODES.by_space.key:
+      sql += 'p.space LIKE ';
+      break;
+  }
+  if (searchText == '') {
+    sql += `''%''`;
+  } else {
+    sql += `''%${ searchText }%''`;
+  }
+  db.transaction((tx) => {
+    tx.executeSql(`
+      SELECT key, value FROM ${ METADATA_TABLE }
+      WHERE key = '${ SEARCH_KEYWORD }';
+    `, [ ], (tx, result) => {
+      if (result.rows.length == 0) {
+        tx.executeSql(`
+          INSERT INTO ${ METADATA_TABLE } VALUES
+              ('${ SEARCH_KEYWORD }', '${ sql }');
+        `, [ ], (tx, result) => dispatch(setCurrentOrderMode(Math.random())),
+        (err) => console.error(err));
+      } else {
+        tx.executeSql(`
+          UPDATE ${ METADATA_TABLE } SET value = '${ sql }'
+          WHERE key = '${ SEARCH_KEYWORD }';
+        `, [ ], (tx, result) => dispatch(setCurrentOrderMode(Math.random())),
+        (err) => console.error(err));
+      }
     });
   });
 }

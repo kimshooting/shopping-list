@@ -35,3 +35,5 @@ export const FETCH_SHARED_DATA = 201;
 
 export const SHARED_DATA_ROOT_DIRECTORY = documentDirectory + 'shared_data_dir/';
 export const SHARED_DATA_MANAGEMENT_FILENAME = 'shared_data.json';
+
+export const SEARCH_KEYWORD = 'search_keyword';

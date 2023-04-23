@@ -1,5 +1,5 @@
 import { FlatList, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { CIRCLE_PARTICIPATE_TABLE, CURRENT_ORDER, DEFAULT_IMAGE, METADATA_TABLE, ORDER_BY_CIRCLE_NAME, ORDER_BY_PENNAME, ORDER_BY_PRIORITY, ORDER_BY_SPACE, PRIORITY_TABLE, REGISTERED_TABLE, WORK_TABLE } from "../data/metadata";
+import { CIRCLE_PARTICIPATE_TABLE, CURRENT_ORDER, DEFAULT_IMAGE, METADATA_TABLE, ORDER_BY_CIRCLE_NAME, ORDER_BY_PENNAME, ORDER_BY_PRIORITY, ORDER_BY_SPACE, PRIORITY_TABLE, REGISTERED_TABLE, SEARCH_KEYWORD, WORK_TABLE } from "../data/metadata";
 import { db } from "../App";
 import { useEffect, useState } from "react";
 import HomeToolbar from "../toolbar/HomeToolbar";
@@ -29,7 +29,17 @@ function HomeScreen({ navigation }) {
           orderBySql = '';
       }
 
-      console.log('orderBySql', orderBySql);
+      let whereStatement = '';
+      await db.transaction((tx) => {
+        tx.executeSql(`
+          SELECT key, value FROM ${ METADATA_TABLE } WHERE key = '${ SEARCH_KEYWORD }';
+        `, [ ], (tx, result) => {
+          const len = result.rows.length;
+          if (len != 0) {
+            whereStatement = result.rows.item(0).value;
+          }
+        });
+      });
 
       await db.transaction((tx) => {
         tx.executeSql(`
@@ -38,6 +48,7 @@ function HomeScreen({ navigation }) {
           FROM ${ REGISTERED_TABLE } AS r
           INNER JOIN ${ CIRCLE_PARTICIPATE_TABLE } AS p ON r.circle_id = p.id
           INNER JOIN ${ PRIORITY_TABLE } AS pr ON r.priority = pr.priority
+          ${ whereStatement }
           ${ orderBySql };
         `, [ ], (tx, result) => {
           const len = result.rows.length;
@@ -58,7 +69,6 @@ function HomeScreen({ navigation }) {
         SELECT * FROM ${ METADATA_TABLE }
         WHERE key = '${ CURRENT_ORDER }';
       `, [ ], (tx, result) => {
-        console.log('hhhh');
         const len = result.rows.length;
         if (len == 0) {
           tx.executeSql(`
@@ -67,7 +77,6 @@ function HomeScreen({ navigation }) {
           `);
           selectRecords(ORDER_BY_PRIORITY);
         } else {
-          console.log(result.rows.item(0).value);
           selectRecords(result.rows.item(0).value);
         }
       }, (err) => {

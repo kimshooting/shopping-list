@@ -122,6 +122,7 @@ async function onComplete(data, navigation, isEdit) {
   if (data.title == '') {
     data.title = DEFAULT_WORK_TITLE;
   }
+  data.title = data.title.replace(`'`, `''`);
   if (data.price == '') {
     data.price = '0';
   }
