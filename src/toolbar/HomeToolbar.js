@@ -3,8 +3,9 @@ import { Alert, Button, Modal, Pressable, StyleSheet, Text, Touchable, Touchable
 import { TextInput } from 'react-native-paper';
 import { db } from '../App';
 import { CURRENT_ORDER, METADATA_TABLE, ORDER_BY_CIRCLE_NAME, ORDER_BY_PENNAME, ORDER_BY_PRIORITY, ORDER_BY_SPACE, SEARCH_KEYWORD } from '../data/metadata';
-import { setCurrentOrderMode } from '../data/store';
-import { useDispatch } from 'react-redux';
+import { setCurrentBudget, setCurrentOrderMode } from '../data/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { calculateCurrentBudget } from '../function/function';
 
 const MODES = {
   by_circle: {
@@ -29,6 +30,15 @@ function HomeToolbar() {
 
   const [ selectedOrder, setSelectedOrder ] = useState(-1);
   const [ searchMode, setSearchMode ] = useState(MODES.by_circle);
+  const currentBudget = useSelector((state) => state.currentBudget);
+  useEffect(() => {
+    calculateCurrentBudget()
+        .then((result) => dispatch(setCurrentBudget(result)))  ;
+  }, [ ]);
+
+  useEffect(() => {
+
+  }, [ currentBudget ]);
 
   return (
     <View style={ styles.container }>
@@ -115,6 +125,7 @@ function HomeToolbar() {
       <Button
           title='정렬 기준'
           onPress={ () => setOrderModalVisible(true) }  />
+      <Text style={ styles.modalText }>{ currentBudget }</Text>
     </View>
   );
 }

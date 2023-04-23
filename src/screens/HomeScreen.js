@@ -3,7 +3,8 @@ import { CIRCLE_PARTICIPATE_TABLE, CURRENT_ORDER, DEFAULT_IMAGE, METADATA_TABLE,
 import { db } from "../App";
 import { useEffect, useState } from "react";
 import HomeToolbar from "../toolbar/HomeToolbar";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { setCurrentBudget } from "../data/store";
 
 function HomeScreen({ navigation }) {
   const [ registeredCircleList, setRegisteredCircleList ] = useState([ ]);
@@ -181,11 +182,16 @@ function WorkListItem({ data, onPressFunc }) {
   };
 
   const [ isDefaultImageMode, setIsDefaultImageMode ] = useState(data.checked == '0');
+
+  const currentBudget = useSelector((state) => state.currentBudget);
+  const dispatch = useDispatch();
   return (
     <TouchableOpacity
         onPress={ () =>  {
           onPressImage(data, isDefaultImageMode, setIsDefaultImageMode);
           onPressFunc();
+          const pmBudget = data.checked == 1 ? data.price : -data.price;
+          dispatch(setCurrentBudget(currentBudget + pmBudget));
         } }>
       { isDefaultImageMode ?
             <Image

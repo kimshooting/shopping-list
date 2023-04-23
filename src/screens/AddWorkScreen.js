@@ -5,6 +5,9 @@ import { RadioButton } from 'react-native-paper';
 import { db } from '../App';
 import { DEFAULT_IMAGE, DEFAULT_WORK_TITLE, PRIORITY_TABLE, WORK_IMAGE_DIRECTORY, WORK_REGISTERED_TABLE, WORK_TABLE } from '../data/metadata';
 import { copyAsync, moveAsync } from 'expo-file-system';
+import { calculateCurrentBudget } from '../function/function';
+import { useDispatch } from 'react-redux';
+import { setCurrentBudget } from '../data/store';
 
 function AddWorkScreen({ route, navigation }) {
   const circleData = route.params.circleData;
@@ -39,6 +42,8 @@ function AddWorkScreen({ route, navigation }) {
 
   const [ title, setTitle ] = useState(workData.title);
   const [ price, setPrice ] = useState(workData.price.toString());
+
+  const dispatch = useDispatch();
 
   return (
     <SafeAreaView style={ styles.container }>
@@ -82,7 +87,7 @@ function AddWorkScreen({ route, navigation }) {
               price: price,
               circle_id: circleData.circle_id,
             }
-            onComplete(data, navigation, isEdit);
+            onComplete(data, navigation, isEdit, dispatch);
           } } />
     </SafeAreaView>
   );
@@ -117,7 +122,7 @@ function RadioBtn({ item, checker }) {
   )
 }
 
-async function onComplete(data, navigation, isEdit) {
+async function onComplete(data, navigation, isEdit, dispatch) {
   console.log(data);
   if (data.title == '') {
     data.title = DEFAULT_WORK_TITLE;
@@ -155,6 +160,8 @@ async function onComplete(data, navigation, isEdit) {
   await db.transaction((tx) => {
     tx.executeSql(sql, [ ], (tx, result) => console.log(result), (err) => console.log(err));
   });
+
+  calculateCurrentBudget().then((result) => dispatch(setCurrentBudget(result)));
 
   navigation.goBack();
 }
