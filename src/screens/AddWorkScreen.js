@@ -4,19 +4,23 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import { RadioButton } from 'react-native-paper';
 import { db } from '../App';
 import { DEFAULT_IMAGE, DEFAULT_WORK_TITLE, PRIORITY_TABLE, WORK_IMAGE_DIRECTORY, WORK_REGISTERED_TABLE, WORK_TABLE } from '../data/metadata';
-import { copyAsync } from 'expo-file-system';
+import { copyAsync, moveAsync } from 'expo-file-system';
 
 function AddWorkScreen({ route, navigation }) {
-  const dataFromParent = route.params.data;
-  console.log(dataFromParent);
-  const defaultImage = {
+  const circleData = route.params.circleData;
+  const isEdit = route.params.isEdit;
+  const workData = route.params.workData;
+  const defaultImage = workData.image_path == DEFAULT_IMAGE ? {
     src: require('../../public/null-image.png'),
     isDefault: true
+  } : {
+    src: workData.image_path,
+    isDefault: false
   }
   const [ currentImage, setCurrentImage ] = useState(defaultImage);
 
   const [ prioritySet, setPrioritySet ] = useState([ ]);
-  const [ checked, setChecked ] = useState(dataFromParent.priority);
+  const [ checked, setChecked ] = useState(workData.priority);
 
   useEffect(() => {
     db.transaction((tx) => {
@@ -33,8 +37,8 @@ function AddWorkScreen({ route, navigation }) {
     });
   }, [ ]);
 
-  const [ title, setTitle ] = useState('');
-  const [ price, setPrice ] = useState('');
+  const [ title, setTitle ] = useState(workData.title);
+  const [ price, setPrice ] = useState(workData.price.toString());
 
   return (
     <SafeAreaView style={ styles.container }>
@@ -48,11 +52,13 @@ function AddWorkScreen({ route, navigation }) {
         </TouchableOpacity>
         <TextInput style={ styles.textInput } placeholder='타이틀'
             placeholderTextColor='#868e96'
-            onChangeText={ (e) => setTitle(e) } />
+            onChangeText={ (e) => setTitle(e) }
+            value={ title } />
         <TextInput style={ styles.textInput }
             placeholder='가격' placeholderTextColor='#868e96'
             inputMode='numeric'
-            onChangeText={ (n) => setPrice(n) } />
+            onChangeText={ (n) => setPrice(n) }
+            value={ price } />
         <Text style={ styles.text }>우선순위</Text>
         <View style={ styles.radioContainer }>
           {
@@ -68,14 +74,15 @@ function AddWorkScreen({ route, navigation }) {
           title='완료'
           onPress={ () => {
             const data = {
+              id: workData.id,
               title: title,
               checked: 0,
               image: currentImage,
               priority: checked,
               price: price,
-              circle_id: dataFromParent.circle_id,
+              circle_id: circleData.circle_id,
             }
-            onComplete(data, navigation);
+            onComplete(data, navigation, isEdit);
           } } />
     </SafeAreaView>
   );
@@ -110,7 +117,7 @@ function RadioBtn({ item, checker }) {
   )
 }
 
-async function onComplete(data, navigation) {
+async function onComplete(data, navigation, isEdit) {
   console.log(data);
   if (data.title == '') {
     data.title = DEFAULT_WORK_TITLE;
@@ -123,7 +130,7 @@ async function onComplete(data, navigation) {
   } else {
     const filename = data.image.src.split('/').pop();
     const imagePath = WORK_IMAGE_DIRECTORY + filename;
-    await copyAsync({
+    await moveAsync({
           from: data.image.src,
           to: imagePath
         }).then((result) => console.log(result))
@@ -131,20 +138,21 @@ async function onComplete(data, navigation) {
     data.image.src = imagePath;
   }
 
-  await db.transaction((tx) => {
-    tx.executeSql(`
-      INSERT INTO ${ WORK_TABLE } (title, checked, image_path, priority, price, circle_id) VALUES
-        ('${ data.title }', ${ data.checked }, '${ data.image.src }', ${ data.priority }, ${ data.price }, ${ data.circle_id });
-    `, [ ], (tx, result) => console.log(result), (err) => console.log(err));
-  });
+  let sql = '';
+  if (isEdit) {
+    console.log('update');
+    sql = `
+        UPDATE ${ WORK_TABLE } SET title = '${ data.title }', checked = ${ data.checked }, image_path = '${ data.image.src }',
+            priority = ${ data.priority }, price = ${ data.price } WHERE id = ${ data.id };`;
+  } else {
+    console.log('insert');
+    sql = `
+        INSERT INTO ${ WORK_TABLE } (title, checked, image_path, priority, price, circle_id) VALUES
+          ('${ data.title }', ${ data.checked }, '${ data.image.src }', ${ data.priority }, ${ data.price }, ${ data.circle_id });`
+  }
 
   await db.transaction((tx) => {
-    tx.executeSql(`
-          SELECT * FROM ${ WORK_TABLE };
-        `, [ ], (tx, result) => {
-          const len = result.rows.length;
-          const id = result.rows.item(len - 1).id;
-        }, (err) => console.log(err));
+    tx.executeSql(sql, [ ], (tx, result) => console.log(result), (err) => console.log(err));
   });
 
   navigation.goBack();

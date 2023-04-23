@@ -56,7 +56,7 @@ function HomeToolbar() {
       <TextInput style={ styles.searchText }
           onChangeText={ (e) => setSearchText(e) } />
       <Button
-          title='Modal'
+          title='정렬 기준'
           onPress={ () => setModalVisible(true) }  />
     </View>
   );

@@ -78,14 +78,48 @@ function CircleEditScreen({ route, navigation }) {
           color='red'
           title='서클 삭제'
           onPress={() => onDelete(navigation, dataFromPrevious.circle_id, workList, setWorkList) } />
-      <Button title='작품 추가' onPress={ () => navigation.navigate('AddWork', { data: dataFromPrevious }) } />
+      <Button title='작품 추가' onPress={ () => {
+            toAddWork(navigation, dataFromPrevious);
+          } } />
       <FlatList
           style={ styles.workContainerList }
           data={ workList }
-          renderItem={ ({ item }) => <WorkItem data={ item } colorSet={ prioritySet } /> }
+          renderItem={ ({ item }) => <WorkItem circleData={ dataFromPrevious } workData={ item } colorSet={ prioritySet } navigation={ navigation } /> }
           keyExtractor={ (item) => item.id } />
     </SafeAreaView>
   );
+}
+
+function toAddWork(navigation, dataFromPrevious) {
+  const workData = {
+    title: '',
+    price: '',
+    priority: dataFromPrevious.priority,
+    image_path: DEFAULT_IMAGE,
+  }
+  navigation.navigate('AddWork', { circleData: dataFromPrevious, isEdit: false, workData: workData });
+}
+
+function onDelete(navigation, circle_id, workList) {
+  const deleteCircle = () => {
+    db.transaction((tx) => {
+      tx.executeSql(`
+        DELETE FROM ${ WORK_TABLE }
+        WHERE circle_id = ${ circle_id };
+      `, [ ], (tx, result) => {
+        for (work of workList) {
+          deleteAsync(work.image_path, { idempotent: true });
+        }
+        tx.executeSql(`
+          DELETE FROM ${ REGISTERED_TABLE }
+          WHERE circle_id = ${ circle_id };
+        `, [ ], (tx, result) => {
+          navigation.goBack();
+        });
+      }, (err) => console.error(err));
+    });
+  }
+  deleteCircle();
 }
 
 function RadioBtn({ item, checker, current }) {
@@ -115,50 +149,33 @@ function RadioBtn({ item, checker, current }) {
   )
 }
 
-function WorkItem({data, colorSet}) {
-  const imageSrc = data.image_path == DEFAULT_IMAGE
+function WorkItem({ circleData, workData, colorSet, navigation }) {
+  const imageSrc = workData.image_path == DEFAULT_IMAGE
       ? require('../../public/null-image.png')
-      : { uri: data.image_path };
+      : { uri: workData.image_path };
   const styleObj = {
     width: 25,
     height: 25,
-    backgroundColor: colorSet[data.priority - 1].color,
+    backgroundColor: colorSet[workData.priority - 1].color,
   }
   return (
-    <TouchableOpacity style={ styles.workItem }>
+    <TouchableOpacity style={ styles.workItem }
+        onPress={ () => editWork(circleData, workData, navigation) }>
       <Image
           style={ styles.workImage }
           source={ imageSrc }
           resizeMode='contain' />
       <View>
         <View style={ styleObj } />
-        <Text style={ styles.text }>{ data.title }</Text>
-        <Text style={ styles.text }>{ data.price }</Text>
+        <Text style={ styles.text }>{ workData.title }</Text>
+        <Text style={ styles.text }>{ workData.price }</Text>
       </View>
     </TouchableOpacity>
   );
 }
 
-function onDelete(navigation, circle_id, workList) {
-  const deleteCircle = () => {
-    db.transaction((tx) => {
-      tx.executeSql(`
-        DELETE FROM ${ WORK_TABLE }
-        WHERE circle_id = ${ circle_id };
-      `, [ ], (tx, result) => {
-        for (work of workList) {
-          deleteAsync(work.image_path, { idempotent: true });
-        }
-        tx.executeSql(`
-          DELETE FROM ${ REGISTERED_TABLE }
-          WHERE circle_id = ${ circle_id };
-        `, [ ], (tx, result) => {
-          navigation.goBack();
-        });
-      }, (err) => console.error(err));
-    });
-  }
-  deleteCircle();
+function editWork(circleData, workData, navigation) {
+  navigation.navigate('AddWork', { circleData: circleData, isEdit: true, workData: workData });
 }
 
 const styles = StyleSheet.create({
