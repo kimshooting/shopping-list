@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Alert, Button, FlatList, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { db } from '../App';
 import { CIRCLE_PARTICIPATE_TABLE, DEFAULT_IMAGE, PRIORITY_TABLE, REGISTERED_TABLE, WORK_REGISTERED_TABLE, WORK_TABLE } from '../data/metadata';
 import { RadioButton } from 'react-native-paper';
 import { deleteAsync } from 'expo-file-system';
+import { db } from '../db';
 
 function CircleEditScreen({ route, navigation }) {
   const dataFromPrevious = route.params.data;

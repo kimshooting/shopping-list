@@ -1,10 +1,10 @@
 import { Text, View } from "react-native";
-import { db } from "../App";
 import { copyAsync, deleteAsync, documentDirectory, getInfoAsync, makeDirectoryAsync, readAsStringAsync, readDirectoryAsync, writeAsStringAsync } from "expo-file-system";
 import { CIRCLE_PARTICIPATE_TABLE, EXPORT_CIRCLE_DATA_FILENAME, EXPORT_CIRCLE_IMAGES_DIR, EXPORT_DATA_ROOT_DIR, EXPORT_ENTRY_FILENAME, EXPORT_IMAGE_FILES_DIR, EXPORT_TARGET_ARCHIVE, EXPORT_WORK_DATA_FILENAME, EXPORT_WORK_IMAGES_DIR, REGISTERED_TABLE, WORK_TABLE } from "../data/metadata";
 import { useEffect, useState } from "react";
 import { zip, unzip, unzipAssets, subscribe } from 'react-native-zip-archive';
 import * as Sharing from 'expo-sharing';
+import { db } from "../db";
 
 function LoadingForExportingDataScreen({ navigation }) {
   // readDirectoryAsync(documentDirectory).then((result) => console.log(result));

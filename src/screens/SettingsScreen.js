@@ -1,8 +1,8 @@
 import { StorageAccessFramework } from 'expo-file-system';
 import { Alert, Button, SafeAreaView, StyleSheet } from 'react-native';
 import { METADATA_TABLE, DIRECTORY_URI_FOR_FETCH_CIRCLE_DATA, DIRECTORY_URI_FOR_FETCH_SHARED_DATA } from '../data/metadata';
-import { db } from '../App';
 import LoadingForFetchingSharedDataScreen from './LoadingForFetchingSharedDataScreen';
+import { db } from '../db';
 
 function SettingsScreen({ navigation }) {
   return (

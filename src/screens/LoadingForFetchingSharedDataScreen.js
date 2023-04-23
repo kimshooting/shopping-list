@@ -1,10 +1,10 @@
 import { Text, View } from 'react-native';
 import { CIRCLE_PARTICIPATE_TABLE, REGISTERED_TABLE, SHARED_DATA_MANAGEMENT_FILENAME, WORK_TABLE } from '../data/metadata';
 import { StorageAccessFramework, documentDirectory, readAsStringAsync } from 'expo-file-system';
-import { db } from '../App';
 import { useDispatch } from 'react-redux';
 import { calculateCurrentBudget } from '../function/function';
 import { setCurrentBudget } from '../data/store';
+import { db } from '../db';
 
 function LoadingForFetchingSharedDataScreen({ route, navigation }) {
   const dir = route.params.dir;

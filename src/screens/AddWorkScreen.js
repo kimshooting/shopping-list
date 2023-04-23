@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import { Button, Image, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { RadioButton } from 'react-native-paper';
-import { db } from '../App';
 import { DEFAULT_IMAGE, DEFAULT_WORK_TITLE, PRIORITY_TABLE, WORK_IMAGE_DIRECTORY, WORK_REGISTERED_TABLE, WORK_TABLE } from '../data/metadata';
 import { copyAsync, moveAsync } from 'expo-file-system';
 import { calculateCurrentBudget } from '../function/function';
 import { useDispatch } from 'react-redux';
 import { setCurrentBudget } from '../data/store';
+import { db } from '../db';
 
 function AddWorkScreen({ route, navigation }) {
   const circleData = route.params.circleData;

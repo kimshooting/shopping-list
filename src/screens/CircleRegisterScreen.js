@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { Button, Image, SafeAreaView, StyleSheet, Text, ToastAndroid, View } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useSelector } from 'react-redux';
-import { db } from '../App';
 import { CIRCLE_IMAGE_DIRECTORY, DEFAULT_IMAGE, PRIORITY_TABLE, REGISTERED_TABLE } from '../data/metadata';
 import { RadioButton } from 'react-native-paper';
 import { copyAsync } from 'expo-file-system';
+import { db } from '../db';
 
 function CircleRegisterScreen({ navigation }) {
   const selectedCircle = useSelector((state) => state.selectedCircle);

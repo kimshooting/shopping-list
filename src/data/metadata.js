@@ -5,6 +5,8 @@ export const METADATA_TABLE = 'metadata';
 export const DIRECTORY_URI_FOR_FETCH_CIRCLE_DATA = 'directoryUriForFetchCircleData';
 export const DIRECTORY_URI_FOR_FETCH_SHARED_DATA = 'directory_uri_for_fetch_shared_data';
 
+export const BUDGET_CRITERION = 'budget_criterion';
+
 export const CURRENT_ORDER = 'current_order';
 
 export const ORDER_BY_PRIORITY = 10;
