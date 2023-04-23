@@ -23,17 +23,6 @@ const MODES = {
   }
 }
 
-function applyCurrentBudgetCriterion() {
-  db.transaction((tx) => {
-    tx.executeSql(`
-      SELECT key, value FROM ${ METADATA_TABLE }
-      WHERE key = '${ BUDGET_CRITERION }';
-    `, [ ], (tx, result) => {
-
-    });
-  });
-}
-
 function getPrioritySet() {
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {

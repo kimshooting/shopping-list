@@ -1,5 +1,5 @@
 import { FlatList, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { CIRCLE_PARTICIPATE_TABLE, CURRENT_ORDER, DEFAULT_IMAGE, METADATA_TABLE, ORDER_BY_CIRCLE_NAME, ORDER_BY_PENNAME, ORDER_BY_PRIORITY, ORDER_BY_SPACE, PRIORITY_TABLE, REGISTERED_TABLE, SEARCH_KEYWORD, WORK_TABLE } from "../data/metadata";
+import { BUDGET_CRITERION, CIRCLE_PARTICIPATE_TABLE, CURRENT_ORDER, DEFAULT_IMAGE, METADATA_TABLE, ORDER_BY_CIRCLE_NAME, ORDER_BY_PENNAME, ORDER_BY_PRIORITY, ORDER_BY_SPACE, PRIORITY_TABLE, REGISTERED_TABLE, SEARCH_KEYWORD, WORK_TABLE } from "../data/metadata";
 import { useEffect, useState } from "react";
 import HomeToolbar from "../toolbar/HomeToolbar";
 import { useDispatch, useSelector } from "react-redux";
@@ -91,6 +91,8 @@ function HomeScreen({ navigation }) {
     doDBTask();
   }, [ currentOrderMode ]);
 
+  const [ budgetCriterion, setBudgetCriterion ] = useState([ ]);
+
   useEffect(() => {
     const focusHandler = navigation.addListener('focus', () => {
       console.log('refresh');
@@ -99,18 +101,24 @@ function HomeScreen({ navigation }) {
     return focusHandler;
   }, [ navigation ]);
 
+  const currentBudget = useSelector((state) => state.currentBudget);
+  useEffect(() => {
+    applyBudgetCriterion(setBudgetCriterion);
+    console.log(budgetCriterion);
+  }, [ currentBudget ]);
+
   return (
     <SafeAreaView style={ styles.container }>
       <HomeToolbar />
       <FlatList
           data={ registeredCircleList }
-          renderItem={ ({ item }) => <ListItem data={ item } navigation={ navigation }/> }
+          renderItem={ ({ item }) => <ListItem data={ item } navigation={ navigation } budgetCriterion={ budgetCriterion } /> }
           keyExtractor={ (item) => item.space } />
     </SafeAreaView>
   );
 }
 
-function ListItem({ data, navigation }) {
+function ListItem({ data, navigation, budgetCriterion }) {
   const defaultImage = data.circle_image_path == DEFAULT_IMAGE;
   const priorityColorBox = {
     width: 25,
@@ -165,14 +173,15 @@ function ListItem({ data, navigation }) {
       </TouchableOpacity>
       <FlatList
           data={ workDataList }
-          renderItem={ ({ item }) => <WorkListItem data={ item } onPressFunc={ doDBTask } /> }
+          renderItem={ ({ item }) => <WorkListItem data={ item } onPressFunc={ doDBTask } budgetCriterion={ budgetCriterion } /> }
           keyExtractor={ (item) => item.id }
           horizontal />
     </View>
   );
 }
 
-function WorkListItem({ data, onPressFunc }) {
+function WorkListItem({ data, onPressFunc, budgetCriterion }) {
+  const dispatch = useDispatch();
   const imageSrc = data.image_path == DEFAULT_IMAGE ? require('../../public/null-image.png') : { uri: data.image_path };
   const imageStyle = {
     width: 80,
@@ -181,17 +190,23 @@ function WorkListItem({ data, onPressFunc }) {
     borderColor: data.color,
   };
 
+  const budgetTask = () => {
+    if (budgetCriterion.includes(data.priority)) {
+      const pmBudget = data.checked == 1 ? data.price : -data.price;
+      dispatch(setCurrentBudget(currentBudget + pmBudget));
+    }
+  }
+
   const [ isDefaultImageMode, setIsDefaultImageMode ] = useState(data.checked == '0');
 
   const currentBudget = useSelector((state) => state.currentBudget);
-  const dispatch = useDispatch();
+  
   return (
     <TouchableOpacity
         onPress={ () =>  {
           onPressImage(data, isDefaultImageMode, setIsDefaultImageMode);
           onPressFunc();
-          const pmBudget = data.checked == 1 ? data.price : -data.price;
-          dispatch(setCurrentBudget(currentBudget + pmBudget));
+          budgetTask();
         } }>
       { isDefaultImageMode ?
             <Image
@@ -212,6 +227,26 @@ function onPressImage(data, isDefaultImageMode, setIsDefaultImageMode) {
       UPDATE ${ WORK_TABLE } SET checked = ${ isDefaultImageMode ? 1 : 0 }
       WHERE id = ${ data.id };
     `, [ ], (tx, result) => { }, (err) => console.error(err));
+  });
+}
+
+function applyBudgetCriterion(setBudgetCriterion) {
+  console.log('applyBudgetCriterion');
+  db.transaction((tx) => {
+    tx.executeSql(`
+      SELECT key, value FROM ${ METADATA_TABLE }
+      WHERE key = '${ BUDGET_CRITERION }';
+    `, [ ], (tx, result) => {
+      const criterionArray = result.rows.item(0).value.split(/,+/);
+      for (let i = 0; i < criterionArray.length; i++) {
+        try {
+          criterionArray[i] = parseInt(criterionArray[i]);
+        } catch (err) {
+          
+        }
+      }
+      setBudgetCriterion(criterionArray);
+    }, (err) => console.log(err));
   });
 }
 
