@@ -52,7 +52,8 @@ function HomeToolbar() {
         </View>
       </Modal>
       <Button
-          title='검색' />
+          title='검색'
+          onPress={ () => Alert.alert('asdf', 'asdf') } />
       <TextInput style={ styles.searchText }
           onChangeText={ (e) => setSearchText(e) } />
       <Button

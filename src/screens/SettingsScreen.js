@@ -15,11 +15,31 @@ function SettingsScreen({ navigation }) {
           onPress={ () => fetchData(navigation, DIRECTORY_URI_FOR_FETCH_CIRCLE_DATA, 'FileSearch') } />
       <Button 
           title='공유 데이터 가져오기'
-          onPress={ () => fetchData(navigation, DIRECTORY_URI_FOR_FETCH_SHARED_DATA, 'LoadingForFetchingSharedData') } />
+          onPress={ () => {
+            Alert.alert('주의', '기존 데이터가 모두 날아가게 됩니다. 이 작업을 시작하기 전 백업해 두세요.', [
+              {
+                text: 'OK',
+                onPress: () => fetchData(navigation, DIRECTORY_URI_FOR_FETCH_SHARED_DATA, 'LoadingForFetchingSharedData')
+              },
+              {
+                text: 'Cancel'
+              }
+            ]);
+          } } />
       <Button
           title='데이터 완전 삭제'
           color='red'
-          onPress={ () => navigation.navigate('LoadingForCleanWholeData') } />
+          onPress={ () => {
+            Alert.alert('', '정말 삭제하겠습니까?', [
+              {
+                text: 'OK',
+                onPress: () => navigation.navigate('LoadingForCleanWholeData')
+              },
+              {
+                text: 'Cancel'
+              }
+            ]);
+          } } />
     </SafeAreaView>
   )
 }

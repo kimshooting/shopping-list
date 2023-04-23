@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, FlatList, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Button, FlatList, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { db } from '../App';
 import { CIRCLE_PARTICIPATE_TABLE, DEFAULT_IMAGE, PRIORITY_TABLE, REGISTERED_TABLE, WORK_REGISTERED_TABLE, WORK_TABLE } from '../data/metadata';
 import { RadioButton } from 'react-native-paper';
@@ -119,7 +119,15 @@ function onDelete(navigation, circle_id, workList) {
       }, (err) => console.error(err));
     });
   }
-  deleteCircle();
+  Alert.alert('', '정말 삭제하겠습니까?', [
+    {
+      text: 'OK',
+      onPress: () => deleteCircle()
+    },
+    {
+      text: 'Cancel'
+    }
+  ]);
 }
 
 function RadioBtn({ item, checker, current }) {
