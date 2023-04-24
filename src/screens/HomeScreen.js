@@ -10,85 +10,8 @@ function HomeScreen({ navigation }) {
   const [ registeredCircleList, setRegisteredCircleList ] = useState([ ]);
   const currentOrderMode = useSelector((state) => state.currentOrderMode);
 
-  const doDBTask = async () => {
-    const selectRecords = async (orderMode) => {
-      let orderBySql = '';
-      switch (parseInt(orderMode)) {
-        case ORDER_BY_PRIORITY:
-          orderBySql = 'ORDER BY pr.priority ASC;';
-          break;
-        case ORDER_BY_CIRCLE_NAME:
-          orderBySql = 'ORDER BY p.circle_name ASC, pr.priority ASC';
-          break;
-        case ORDER_BY_PENNAME:
-          orderBySql = 'ORDER BY p.penname ASC, pr.priority ASC';
-          break;
-        case ORDER_BY_SPACE:
-          orderBySql = 'ORDER BY p.id ASC';
-          break;
-        default:
-          orderBySql = '';
-      }
-
-      let whereStatement = '';
-      await db.transaction((tx) => {
-        tx.executeSql(`
-          SELECT key, value FROM ${ METADATA_TABLE } WHERE key = '${ SEARCH_KEYWORD }';
-        `, [ ], (tx, result) => {
-          const len = result.rows.length;
-          if (len != 0) {
-            whereStatement = result.rows.item(0).value;
-          }
-        });
-      });
-
-      await db.transaction((tx) => {
-        tx.executeSql(`
-          SELECT r.id, r.circle_image_path, p.id AS circle_id, p.space, p.penname, p.circle_name,
-                 pr.priority, pr.title, pr.color
-          FROM ${ REGISTERED_TABLE } AS r
-          INNER JOIN ${ CIRCLE_PARTICIPATE_TABLE } AS p ON r.circle_id = p.id
-          INNER JOIN ${ PRIORITY_TABLE } AS pr ON r.priority = pr.priority
-          ${ whereStatement }
-          ${ orderBySql };
-        `, [ ], (tx, result) => {
-          const len = result.rows.length;
-          const data = [ ];
-          for (let i = 0; i < len; i++) {
-            data.push(result.rows.item(i));
-          }
-          setRegisteredCircleList(data);
-        }, (err) => {
-          console.log(err);
-          navigation('Home');
-        });
-      });
-    }
-
-    await db.transaction((tx) => {
-      tx.executeSql(`
-        SELECT * FROM ${ METADATA_TABLE }
-        WHERE key = '${ CURRENT_ORDER }';
-      `, [ ], (tx, result) => {
-        const len = result.rows.length;
-        if (len == 0) {
-          tx.executeSql(`
-            INSERT INTO ${ METADATA_TABLE } (key, value) VALUES
-              ('${ CURRENT_ORDER }', ${ ORDER_BY_PRIORITY });
-          `);
-          selectRecords(ORDER_BY_PRIORITY);
-        } else {
-          selectRecords(result.rows.item(0).value);
-        }
-      }, (err) => {
-        console.log(err);
-        navigation('Home');
-      });
-    });
-  };
-
   useEffect(() => {
-    doDBTask();
+    init(setRegisteredCircleList, navigation)
   }, [ currentOrderMode ]);
 
   const [ budgetCriterion, setBudgetCriterion ] = useState([ ]);
@@ -96,7 +19,7 @@ function HomeScreen({ navigation }) {
   useEffect(() => {
     const focusHandler = navigation.addListener('focus', () => {
       console.log('refresh');
-      doDBTask();
+      init(setRegisteredCircleList, navigation)
     });
     return focusHandler;
   }, [ navigation ]);
@@ -104,7 +27,6 @@ function HomeScreen({ navigation }) {
   const currentBudget = useSelector((state) => state.currentBudget);
   useEffect(() => {
     applyBudgetCriterion(setBudgetCriterion);
-    console.log(budgetCriterion);
   }, [ currentBudget ]);
 
   return (
@@ -116,6 +38,83 @@ function HomeScreen({ navigation }) {
           keyExtractor={ (item) => item.space } />
     </SafeAreaView>
   );
+}
+
+function init(setRegisteredCircleList, navigation) {
+  db.transaction((tx) => {
+    tx.executeSql(`
+      SELECT * FROM ${METADATA_TABLE}
+      WHERE key = '${CURRENT_ORDER}';
+    `, [], (tx, result) => {
+      const len = result.rows.length;
+      if (len == 0) {
+        tx.executeSql(`
+          INSERT INTO ${METADATA_TABLE} (key, value) VALUES
+            ('${CURRENT_ORDER}', ${ORDER_BY_PRIORITY});
+        `);
+        selectRecords(ORDER_BY_PRIORITY, setRegisteredCircleList, navigation);
+      } else {
+        selectRecords(result.rows.item(0).value, setRegisteredCircleList, navigation);
+      }
+    }, (err) => {
+      console.log(err);
+      navigation('Home');
+    });
+  });
+}
+
+async function selectRecords(orderMode, setRegisteredCircleList, navigation) {
+  let orderBySql = '';
+  switch (parseInt(orderMode)) {
+    case ORDER_BY_PRIORITY:
+      orderBySql = 'ORDER BY pr.priority ASC;';
+      break;
+    case ORDER_BY_CIRCLE_NAME:
+      orderBySql = 'ORDER BY p.circle_name ASC, pr.priority ASC';
+      break;
+    case ORDER_BY_PENNAME:
+      orderBySql = 'ORDER BY p.penname ASC, pr.priority ASC';
+      break;
+    case ORDER_BY_SPACE:
+      orderBySql = 'ORDER BY p.id ASC';
+      break;
+    default:
+      orderBySql = '';
+  }
+
+  let whereStatement = '';
+  await db.transaction((tx) => {
+    tx.executeSql(`
+          SELECT key, value FROM ${METADATA_TABLE} WHERE key = '${SEARCH_KEYWORD}';
+        `, [], (tx, result) => {
+      const len = result.rows.length;
+      if (len != 0) {
+        whereStatement = result.rows.item(0).value;
+      }
+    });
+  });
+
+  await db.transaction((tx) => {
+    tx.executeSql(`
+      SELECT r.id, r.circle_image_path, p.id AS circle_id, p.space, p.penname, p.circle_name,
+              pr.priority, pr.title, pr.color
+      FROM ${REGISTERED_TABLE} AS r
+      INNER JOIN ${CIRCLE_PARTICIPATE_TABLE} AS p ON r.circle_id = p.id
+      INNER JOIN ${PRIORITY_TABLE} AS pr ON r.priority = pr.priority
+      ${whereStatement}
+      ${orderBySql};
+    `, [], (tx, result) => {
+      const len = result.rows.length;
+      const data = [];
+      for (let i = 0; i < len; i++) {
+        data.push(result.rows.item(i));
+      }
+      setRegisteredCircleList(data);
+    }, (err) => {
+      console.log(err);
+      navigation.navigate('Home');
+    });
+  });
 }
 
 function ListItem({ data, navigation, budgetCriterion }) {
@@ -231,7 +230,6 @@ function onPressImage(data, isDefaultImageMode, setIsDefaultImageMode) {
 }
 
 function applyBudgetCriterion(setBudgetCriterion) {
-  console.log('applyBudgetCriterion');
   db.transaction((tx) => {
     tx.executeSql(`
       SELECT key, value FROM ${ METADATA_TABLE }

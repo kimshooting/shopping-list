@@ -1,7 +1,7 @@
 import { readAsStringAsync } from 'expo-file-system';
 import { useEffect, useState } from 'react';
-import { Button, FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { CIRCLE_PARTICIPATE_TABLE, FETCH_CIRCLE_DATA, FETCH_SHARED_DATA, REGISTERED_TABLE, WORK_TABLE } from '../data/metadata';
+import { Button, FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { CIRCLE_PARTICIPATE_TABLE } from '../data/metadata';
 import { db } from '../db';
 
 function FileSearchScreen({ route, navigation }) {

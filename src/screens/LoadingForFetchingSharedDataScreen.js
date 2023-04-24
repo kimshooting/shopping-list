@@ -1,5 +1,5 @@
 import { Text, View } from 'react-native';
-import { CIRCLE_PARTICIPATE_TABLE, REGISTERED_TABLE, SHARED_DATA_MANAGEMENT_FILENAME, WORK_TABLE } from '../data/metadata';
+import { CIRCLE_PARTICIPATE_TABLE, REGISTERED_TABLE, SHARED_DATA_ENTRY_FILENAME, WORK_TABLE } from '../data/metadata';
 import { StorageAccessFramework, documentDirectory, readAsStringAsync } from 'expo-file-system';
 import { useDispatch } from 'react-redux';
 import { calculateCurrentBudget } from '../function/function';
@@ -45,7 +45,7 @@ async function copyFiles(dir) {
 }
 
 async function processManagementFile(rootDirectory) {
-  return await readAsStringAsync(rootDirectory + SHARED_DATA_MANAGEMENT_FILENAME);
+  return await readAsStringAsync(rootDirectory + SHARED_DATA_ENTRY_FILENAME);
 }
 
 async function processData(rootDirectory, filename) {
