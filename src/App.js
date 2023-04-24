@@ -1,9 +1,11 @@
 import StackRootContainer from "./navcontainer/StackRootContainer";
-import { Provider } from 'react-redux';
-import store from './data/store';
+import { Provider, useDispatch } from 'react-redux';
+import store, { setIsPriceVisible } from './data/store';
 import { useEffect, useState } from "react";
-import { Text } from "react-native";
-import { init } from "./db";
+import { db, init } from "./db";
+import { IS_PRICE_VISIBLE, METADATA_TABLE } from "./data/metadata";
+
+
 
 function App() {
   const [ root, setRoot ] = useState(<></>);

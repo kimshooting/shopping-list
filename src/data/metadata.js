@@ -14,6 +14,8 @@ export const DIRECTORY_URI_FOR_FETCH_SHARED_DATA = 'directory_uri_for_fetch_shar
 export const BUDGET_CRITERION = 'budget_criterion';
 export const CURRENT_ORDER = 'current_order';
 export const SEARCH_KEYWORD = 'search_keyword';
+export const IS_PRICE_VISIBLE = 'is_price_visible';
+export const IS_WORK_TITLE_VISIBLE = 'is_work_title_visible';
 
 // Order of circles
 export const ORDER_BY_PRIORITY = 10;

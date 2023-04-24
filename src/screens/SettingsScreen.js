@@ -1,5 +1,5 @@
 import { StorageAccessFramework } from 'expo-file-system';
-import { Alert, Button, SafeAreaView, StyleSheet } from 'react-native';
+import { Alert, Button, SafeAreaView, ScrollView, StyleSheet } from 'react-native';
 import { METADATA_TABLE, DIRECTORY_URI_FOR_FETCH_CIRCLE_DATA, DIRECTORY_URI_FOR_FETCH_SHARED_DATA } from '../data/metadata';
 import LoadingForFetchingSharedDataScreen from './LoadingForFetchingSharedDataScreen';
 import { db } from '../db';
@@ -7,51 +7,53 @@ import { db } from '../db';
 function SettingsScreen({ navigation }) {
   return (
     <SafeAreaView>
-      <Button
-          title='서클 등록'
-          onPress={ () => navigation.navigate('CircleRegister') } />
-      <Button 
-          title='서클 데이터 가져오기'
-          onPress={ () => fetchData(navigation, DIRECTORY_URI_FOR_FETCH_CIRCLE_DATA, 'FileSearch') } />
-      <Button 
-          title='공유 데이터 가져오기'
-          onPress={ () => {
-            Alert.alert('주의', '기존 데이터가 모두 날아가게 됩니다. 이 작업을 시작하기 전 백업해 두세요.', [
-              {
-                text: 'OK',
-                onPress: () => fetchData(navigation, DIRECTORY_URI_FOR_FETCH_SHARED_DATA, 'LoadingForFetchingSharedData')
-              },
-              {
-                text: 'Cancel'
-              }
-            ]);
-          } } />
-      <Button
-          title='데이터 공유'
-          onPress={ () => {
-            Alert.alert('', '등록된 서클 데이터, 작품 데이터를 zip 파일로 압축하여 공유합니다.', [
-              {
-                text: 'OK',
-                onPress: () => navigation.navigate('LoadingForExportingData')
-              }, {
-                text: 'Cancel'
-              }
-            ])
-          } } />
-      <Button
-          title='데이터 완전 삭제'
-          color='red'
-          onPress={ () => {
-            Alert.alert('', '정말 삭제하겠습니까?', [
-              {
-                text: 'OK',
-                onPress: () => navigation.navigate('LoadingForCleanWholeData')
-              },
-              {
-                text: 'Cancel'
-              }
-            ]);
-          } } />
+      <ScrollView>
+        <Button
+            title='서클 등록'
+            onPress={ () => navigation.navigate('CircleRegister') } />
+        <Button 
+            title='서클 데이터 가져오기'
+            onPress={ () => fetchData(navigation, DIRECTORY_URI_FOR_FETCH_CIRCLE_DATA, 'FileSearch') } />
+        <Button 
+            title='공유 데이터 가져오기'
+            onPress={ () => {
+              Alert.alert('주의', '기존 데이터가 모두 날아가게 됩니다. 이 작업을 시작하기 전 백업해 두세요.', [
+                {
+                  text: 'OK',
+                  onPress: () => fetchData(navigation, DIRECTORY_URI_FOR_FETCH_SHARED_DATA, 'LoadingForFetchingSharedData')
+                },
+                {
+                  text: 'Cancel'
+                }
+              ]);
+            } } />
+        <Button
+            title='데이터 공유'
+            onPress={ () => {
+              Alert.alert('', '등록된 서클 데이터, 작품 데이터를 zip 파일로 압축하여 공유합니다.', [
+                {
+                  text: 'OK',
+                  onPress: () => navigation.navigate('LoadingForExportingData')
+                }, {
+                  text: 'Cancel'
+                }
+              ])
+            } } />
+        <Button
+            title='데이터 완전 삭제'
+            color='red'
+            onPress={ () => {
+              Alert.alert('', '정말 삭제하겠습니까?', [
+                {
+                  text: 'OK',
+                  onPress: () => navigation.navigate('LoadingForCleanWholeData')
+                },
+                {
+                  text: 'Cancel'
+                }
+              ]);
+            } } />
+      </ScrollView>
     </SafeAreaView>
   )
 }

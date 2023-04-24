@@ -1,7 +1,7 @@
-import { deleteAsync, documentDirectory, readDirectoryAsync } from 'expo-file-system';
+import { deleteAsync, documentDirectory } from 'expo-file-system';
 import { BackHandler, Text, View } from 'react-native';
 import { CIRCLE_IMAGE_DIRECTORY, CIRCLE_PARTICIPATE_TABLE, DIRECTORY_URI_FOR_FETCH_SHARED_DATA, METADATA_TABLE, PRIORITY_TABLE, REGISTERED_TABLE, WORK_IMAGE_DIRECTORY, WORK_TABLE } from '../data/metadata';
-import { db, initApp } from '../db';
+import { db } from '../db';
 
 function LoadingForCleanWholeDataScreen({ navigation }) {
   deleteProcess(navigation);

@@ -1,4 +1,5 @@
 import { configureStore, createSlice } from "@reduxjs/toolkit";
+import { create } from "react-test-renderer";
 
 const selectedCircle = createSlice({
   name: 'selectedCircle',
@@ -40,12 +41,34 @@ const budgetCriterion = createSlice({
   }
 });
 
+const isPriceVisible = createSlice({
+  name: 'isPriceVisible',
+  initialState: true,
+  reducers: {
+    setIsPriceVisible(state, action) {
+      return action.payload;
+    }
+  }
+});
+
+const isWorkTitleVisible = createSlice({
+  name: 'isWorkTitleVisible',
+  initialState: true,
+  reducers: {
+    setIsWorkTitleVisible(state, action) {
+      return action.payload;
+    }
+  }
+});
+
 export default configureStore({
   reducer: {
     selectedCircle: selectedCircle.reducer,
     currentOrderMode: currentOrderMode.reducer,
     currentBudget: currentBudget.reducer,
     budgetCriterion: budgetCriterion.reducer,
+    isPriceVisible: isPriceVisible.reducer,
+    isWorkTitleVisible: isWorkTitleVisible.reducer,
   }
 });
 
@@ -53,3 +76,5 @@ export const { setSelectedCircle } = selectedCircle.actions;
 export const { setCurrentOrderMode } = currentOrderMode.actions;
 export const { setCurrentBudget } = currentBudget.actions;
 export const { setBudgetCriterion } = budgetCriterion.actions;
+export const { setIsPriceVisible } = isPriceVisible.actions;
+export const { setIsWorkTitleVisible } = isWorkTitleVisible.actions;

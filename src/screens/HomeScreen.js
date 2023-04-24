@@ -117,6 +117,25 @@ async function selectRecords(orderMode, setRegisteredCircleList, navigation) {
   });
 }
 
+function applyBudgetCriterion(setBudgetCriterion) {
+  db.transaction((tx) => {
+    tx.executeSql(`
+      SELECT key, value FROM ${ METADATA_TABLE }
+      WHERE key = '${ BUDGET_CRITERION }';
+    `, [ ], (tx, result) => {
+      const criterionArray = result.rows.item(0).value.split(/,+/);
+      for (let i = 0; i < criterionArray.length; i++) {
+        try {
+          criterionArray[i] = parseInt(criterionArray[i]);
+        } catch (err) {
+          
+        }
+      }
+      setBudgetCriterion(criterionArray);
+    }, (err) => console.log(err));
+  });
+}
+
 function ListItem({ data, navigation, budgetCriterion }) {
   const defaultImage = data.circle_image_path == DEFAULT_IMAGE;
   const priorityColorBox = {
@@ -199,6 +218,8 @@ function WorkListItem({ data, onPressFunc, budgetCriterion }) {
   const [ isDefaultImageMode, setIsDefaultImageMode ] = useState(data.checked == '0');
 
   const currentBudget = useSelector((state) => state.currentBudget);
+  const isPriceVisible = useSelector((state) => state.isPriceVisible);
+  const isWorkTitleVisible = useSelector((state) => state.isWorkTitleVisible);
   
   return (
     <TouchableOpacity
@@ -215,6 +236,8 @@ function WorkListItem({ data, onPressFunc, budgetCriterion }) {
           : <CheckedImage
                 style={ imageStyle }
                 source={ imageSrc } /> }
+      { isWorkTitleVisible ? <Text style={ styles.text }>{ data.title }</Text> : null }
+      { isPriceVisible ? <Text style={ styles.text }>{ data.price }</Text> : null }
     </TouchableOpacity>
   );
 }
@@ -226,25 +249,6 @@ function onPressImage(data, isDefaultImageMode, setIsDefaultImageMode) {
       UPDATE ${ WORK_TABLE } SET checked = ${ isDefaultImageMode ? 1 : 0 }
       WHERE id = ${ data.id };
     `, [ ], (tx, result) => { }, (err) => console.error(err));
-  });
-}
-
-function applyBudgetCriterion(setBudgetCriterion) {
-  db.transaction((tx) => {
-    tx.executeSql(`
-      SELECT key, value FROM ${ METADATA_TABLE }
-      WHERE key = '${ BUDGET_CRITERION }';
-    `, [ ], (tx, result) => {
-      const criterionArray = result.rows.item(0).value.split(/,+/);
-      for (let i = 0; i < criterionArray.length; i++) {
-        try {
-          criterionArray[i] = parseInt(criterionArray[i]);
-        } catch (err) {
-          
-        }
-      }
-      setBudgetCriterion(criterionArray);
-    }, (err) => console.log(err));
   });
 }
 
