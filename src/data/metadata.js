@@ -27,6 +27,8 @@ export const ORDER_BY_SPACE = 40;
 export const CIRCLE_IMAGE_DIRECTORY = documentDirectory + 'circle_image_dir/';
 export const WORK_IMAGE_DIRECTORY = documentDirectory + 'work_image_dir/';
 
+export const JAPANESE_CHEAT_SHEET_FILE_PATH = documentDirectory + 'japanese_cheat_sheet.json';
+
 // Default value of image_path in database
 export const DEFAULT_IMAGE = 'default_circle_image';
 
