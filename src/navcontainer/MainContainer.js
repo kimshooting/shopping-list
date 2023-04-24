@@ -1,7 +1,7 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/HomeScreen';
 import SettingsScreen from '../screens/SettingsScreen';
-import FootTrafficScreen from '../screens/FootTrafficScreen';
+import JapaneseCheatSheetScreen from '../screens/JapaneseCheatSheetScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -10,7 +10,7 @@ function MainContainer() {
     <Tab.Navigator screenOptions={ { headerShown: true } }>
       <Tab.Screen name='Home' component={ HomeScreen }
           options={ { headerShown: false, } } />
-      <Tab.Screen name='FootTraffic' component={ FootTrafficScreen }
+      <Tab.Screen name='JapaneseCheatSheet' component={ JapaneseCheatSheetScreen }
           options={ {headerShown: false } } />
       <Tab.Screen name='Settings' component={ SettingsScreen } />
     </Tab.Navigator>
