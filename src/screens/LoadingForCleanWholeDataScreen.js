@@ -4,27 +4,6 @@ import { CIRCLE_IMAGE_DIRECTORY, CIRCLE_PARTICIPATE_TABLE, DIRECTORY_URI_FOR_FET
 import { db, initApp } from '../db';
 
 function LoadingForCleanWholeDataScreen({ navigation }) {
-  // readDirectoryAsync(documentDirectory).then((result) => console.log(result));
-  // db.transaction((tx) => {
-  //   tx.executeSql(`
-  //     SELECT COUNT(*) FROM ${ CIRCLE_PARTICIPATE_TABLE }
-  //   `, [ ], (tx, result) => console.log(result.rows.item(0)));
-  // });
-  // db.transaction((tx) => {
-  //   tx.executeSql(`
-  //     SELECT COUNT(*) FROM ${ WORK_TABLE }
-  //   `, [ ], (tx, result) => console.log(result.rows.item(0)));
-  // });
-  // db.transaction((tx) => {
-  //   tx.executeSql(`
-  //     SELECT COUNT(*) FROM ${ REGISTERED_TABLE }
-  //   `, [ ], (tx, result) => console.log(result.rows.item(0)));
-  // });
-  // db.transaction((tx) => {
-  //   tx.executeSql(`
-  //     SELECT COUNT(*) FROM ${ PRIORITY_TABLE }
-  //   `, [ ], (tx, result) => console.log(result.rows.item(0)));
-  // });
   deleteProcess(navigation);
   return (
     <View style={ { flex: 1, alignItems: 'center', justifyContent: 'center' } }>
@@ -63,9 +42,10 @@ async function deleteProcess(navigation) {
   await db.transaction((tx) => {
     tx.executeSql(`DROP TABLE IF EXISTS ${ METADATA_TABLE }`);
   });
-  initApp();
-  navigation.goBack();
-  BackHandler.exitApp();
+  init().then((result) => {
+    navigation.goBack();
+    BackHandler.exitApp();
+  });
 }
 
 export default LoadingForCleanWholeDataScreen;

@@ -10,7 +10,7 @@ function App() {
   useEffect(() => {
     init().then((result) => {
       setRoot(<Provider store={ store }><StackRootContainer /></Provider>);
-    })
+    });
   }, [ ]);
   
   return (
