@@ -1,19 +1,42 @@
 import { StorageAccessFramework } from 'expo-file-system';
-import { Alert, Button, SafeAreaView, ScrollView, StyleSheet } from 'react-native';
-import { METADATA_TABLE, DIRECTORY_URI_FOR_FETCH_CIRCLE_DATA, DIRECTORY_URI_FOR_FETCH_SHARED_DATA } from '../data/metadata';
-import LoadingForFetchingSharedDataScreen from './LoadingForFetchingSharedDataScreen';
+import { Alert, Button, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
+import { METADATA_TABLE, DIRECTORY_URI_FOR_FETCH_CIRCLE_DATA, DIRECTORY_URI_FOR_FETCH_SHARED_DATA, IS_WORK_TITLE_VISIBLE, IS_PRICE_VISIBLE } from '../data/metadata';
 import { db } from '../db';
+import BouncyCheckbox from 'react-native-bouncy-checkbox';
+import { useDispatch, useSelector } from 'react-redux';
+import { setIsPriceVisible, setIsWorkTitleVisible } from '../data/store';
 
 function SettingsScreen({ navigation }) {
+  const dispatch = useDispatch();
+  const isWorkTitleVisible = useSelector((state) => state.isWorkTitleVisible);
+  const isPriceVisible = useSelector((state) => state.isPriceVisible);
   return (
     <SafeAreaView>
       <ScrollView>
-        <Button
-            title='서클 등록'
-            onPress={ () => navigation.navigate('CircleRegister') } />
         <Button 
             title='서클 데이터 가져오기'
             onPress={ () => fetchData(navigation, DIRECTORY_URI_FOR_FETCH_CIRCLE_DATA, 'FileSearch') } />
+        <Button
+            title='서클 등록'
+            onPress={ () => navigation.navigate('CircleRegister') } />
+        <View style={ styles.checkboxContainer }>
+          <BouncyCheckbox
+              style={ styles.checkbox }
+              size={ 25 }
+              fillColor='orangered'
+              unfillColor='#fff'
+              isChecked={ isWorkTitleVisible }
+              text='작품 타이틀 보이기'
+              onPress={ (isChecked) => onCheckboxPress(isChecked, true, dispatch) } />
+          <BouncyCheckbox
+              style={ styles.checkbox }
+              size={ 25 }
+              fillColor='blue'
+              unfillColor='#fff'
+              isChecked={ isPriceVisible }
+              text='작품 가격 보이기'
+              onPress={ (isChecked) => onCheckboxPress(isChecked, false, dispatch) } />
+        </View>
         <Button 
             title='공유 데이터 가져오기'
             onPress={ () => {
@@ -58,14 +81,19 @@ function SettingsScreen({ navigation }) {
   )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  text: {
-    color: '#000',
-  },
-});
+function onCheckboxPress(isChecked, isWorkTitleVisibleCheckbox, dispatch) {
+  const key = isWorkTitleVisibleCheckbox ? IS_WORK_TITLE_VISIBLE : IS_PRICE_VISIBLE;
+  const value = isChecked ? '1' : '0';
+  const setMethod = isWorkTitleVisibleCheckbox ? setIsWorkTitleVisible : setIsPriceVisible;
+  db.transaction((tx) => {
+    tx.executeSql(`
+      UPDATE ${ METADATA_TABLE } SET value = '${ value }'
+      WHERE key = '${ key }';
+    `, [ ], (tx, result) => {
+      dispatch(setMethod(isChecked));
+    });
+  });
+}
 
 function fetchData(navigation, key, where) {
   db.transaction((tx) => {
@@ -113,5 +141,26 @@ async function readDirectoryAndMoveTo(navigation, dir, key, where) {
     ])
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  text: {
+    color: '#000',
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    marginVertical: 20,
+    marginHorizontal: 15,
+    justifyContent: 'space-between',
+  },
+  checkbox: {
+    alignSelf: 'center',
+  },
+  label: {
+    margin: 8,
+  },
+});
 
 export default SettingsScreen;
