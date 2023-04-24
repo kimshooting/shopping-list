@@ -3,7 +3,7 @@ import { Button, FlatList, SafeAreaView, StyleSheet, Text, TextInput, TouchableO
 import { CIRCLE_PARTICIPATE_TABLE } from '../data/metadata';
 import { useDispatch } from 'react-redux';
 import { setSelectedCircle } from '../data/store';
-import { db } from '../db';
+import { db } from '../backend/db';
 
 function CircleSelectScreen({ navigation }) {
   const [ searchText, setSearchText ] = useState('');

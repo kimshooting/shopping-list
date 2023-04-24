@@ -4,7 +4,7 @@ import { StorageAccessFramework, documentDirectory, readAsStringAsync } from 'ex
 import { useDispatch } from 'react-redux';
 import { calculateCurrentBudget } from '../function/function';
 import { setCurrentBudget } from '../data/store';
-import { db } from '../db';
+import { db } from '../backend/db';
 
 function LoadingForFetchingSharedDataScreen({ route, navigation }) {
   const dir = route.params.dir;

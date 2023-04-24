@@ -2,7 +2,7 @@ import { readAsStringAsync } from 'expo-file-system';
 import { useEffect, useState } from 'react';
 import { Button, FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { CIRCLE_PARTICIPATE_TABLE } from '../data/metadata';
-import { db } from '../db';
+import { db } from '../backend/db';
 
 function FileSearchScreen({ route, navigation }) {
   const fileList = route.params.data;

@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { CIRCLE_IMAGE_DIRECTORY, DEFAULT_IMAGE, PRIORITY_TABLE, REGISTERED_TABLE } from '../data/metadata';
 import { RadioButton } from 'react-native-paper';
 import { copyAsync } from 'expo-file-system';
-import { db } from '../db';
+import { db } from '../backend/db';
 
 function CircleRegisterScreen({ navigation }) {
   const selectedCircle = useSelector((state) => state.selectedCircle);

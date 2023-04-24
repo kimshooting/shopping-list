@@ -2,7 +2,7 @@ import StackRootContainer from "./navcontainer/StackRootContainer";
 import { Provider, useDispatch } from 'react-redux';
 import store, { setIsPriceVisible } from './data/store';
 import { useEffect, useState } from "react";
-import { db, init } from "./db";
+import { db, init } from "./backend/db";
 import { IS_PRICE_VISIBLE, METADATA_TABLE } from "./data/metadata";
 
 

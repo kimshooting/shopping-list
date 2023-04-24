@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import HomeToolbar from "../toolbar/HomeToolbar";
 import { useDispatch, useSelector } from "react-redux";
 import { setCurrentBudget } from "../data/store";
-import { db } from "../db";
+import { db } from "../backend/db";
 
 function HomeScreen({ navigation }) {
   const [ registeredCircleList, setRegisteredCircleList ] = useState([ ]);
   const currentOrderMode = useSelector((state) => state.currentOrderMode);
 
   useEffect(() => {
-    init(setRegisteredCircleList, navigation)
+    init(setRegisteredCircleList, navigation);
   }, [ currentOrderMode ]);
 
   const [ budgetCriterion, setBudgetCriterion ] = useState([ ]);
@@ -19,7 +19,7 @@ function HomeScreen({ navigation }) {
   useEffect(() => {
     const focusHandler = navigation.addListener('focus', () => {
       console.log('refresh');
-      init(setRegisteredCircleList, navigation)
+      init(setRegisteredCircleList, navigation);
     });
     return focusHandler;
   }, [ navigation ]);

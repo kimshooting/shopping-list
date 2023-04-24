@@ -1,5 +1,5 @@
 import SQLite from 'react-native-sqlite-storage';
-import { initApp } from './initApp';
+import { initApp } from '../initApp';
 
 export var db;
 

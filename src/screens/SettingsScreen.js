@@ -1,7 +1,7 @@
 import { StorageAccessFramework } from 'expo-file-system';
 import { Alert, Button, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
 import { METADATA_TABLE, DIRECTORY_URI_FOR_FETCH_CIRCLE_DATA, DIRECTORY_URI_FOR_FETCH_SHARED_DATA, IS_WORK_TITLE_VISIBLE, IS_PRICE_VISIBLE } from '../data/metadata';
-import { db } from '../db';
+import { db } from '../backend/db';
 import BouncyCheckbox from 'react-native-bouncy-checkbox';
 import { useDispatch, useSelector } from 'react-redux';
 import { setIsPriceVisible, setIsWorkTitleVisible } from '../data/store';

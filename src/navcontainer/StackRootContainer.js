@@ -11,7 +11,7 @@ import LoadingForCleanWholeDataScreen from "../screens/LoadingForCleanWholeDataS
 import LoadingForExportingDataScreen from "../screens/LoadingForExportingDataScreen";
 import { useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
-import { db } from "../db";
+import { db } from "../backend/db";
 import { IS_PRICE_VISIBLE, IS_WORK_TITLE_VISIBLE, METADATA_TABLE } from "../data/metadata";
 import { setIsPriceVisible, setIsWorkTitleVisible } from "../data/store";
 import FootTrafficSettingScreen from "../screens/JapaneseCheatSheetScreen";

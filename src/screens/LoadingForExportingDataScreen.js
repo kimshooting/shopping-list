@@ -4,7 +4,7 @@ import { CIRCLE_PARTICIPATE_TABLE, EXPORT_CIRCLE_DATA_FILENAME, EXPORT_CIRCLE_IM
 import { useEffect, useState } from "react";
 import { zip, unzip, unzipAssets, subscribe } from 'react-native-zip-archive';
 import * as Sharing from 'expo-sharing';
-import { db } from "../db";
+import { db } from "../backend/db";
 
 function LoadingForExportingDataScreen({ navigation }) {
   // readDirectoryAsync(documentDirectory).then((result) => console.log(result));

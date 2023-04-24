@@ -7,7 +7,7 @@ import { copyAsync, moveAsync } from 'expo-file-system';
 import { calculateCurrentBudget } from '../function/function';
 import { useDispatch } from 'react-redux';
 import { setCurrentBudget } from '../data/store';
-import { db } from '../db';
+import { db } from '../backend/db';
 
 function AddWorkScreen({ route, navigation }) {
   const circleData = route.params.circleData;

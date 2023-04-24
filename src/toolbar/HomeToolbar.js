@@ -6,7 +6,7 @@ import { setCurrentBudget, setCurrentOrderMode } from '../data/store';
 import { useDispatch, useSelector } from 'react-redux';
 import { calculateCurrentBudget } from '../function/function';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
-import { db } from '../db';
+import { db } from '../backend/db';
 
 const MODES = {
   by_circle: {

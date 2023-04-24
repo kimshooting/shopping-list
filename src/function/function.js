@@ -1,5 +1,5 @@
 import { BUDGET_CRITERION, METADATA_TABLE, WORK_TABLE } from "../data/metadata";
-import { db } from "../db";
+import { db } from "../backend/db";
 
 export async function calculateCurrentBudget() {
   return new Promise((resolve, reject) => {

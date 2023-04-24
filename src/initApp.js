@@ -1,6 +1,6 @@
 import { BUDGET_CRITERION, CIRCLE_IMAGE_DIRECTORY, CIRCLE_PARTICIPATE_TABLE, IS_PRICE_VISIBLE, IS_WORK_TITLE_VISIBLE, METADATA_TABLE, PRIORITY_TABLE, REGISTERED_TABLE, WORK_IMAGE_DIRECTORY, WORK_TABLE } from './data/metadata';
 import { getInfoAsync, makeDirectoryAsync } from 'expo-file-system';
-import { executeDBUnit } from './db';
+import { executeDBUnit } from './backend/db';
 
 
 export async function initApp() {
