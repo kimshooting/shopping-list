@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Alert, Button, Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { TextInput } from 'react-native-paper';
-import { BUDGET_CRITERION, CURRENT_ORDER, METADATA_TABLE, ORDER_BY_CIRCLE_NAME, ORDER_BY_PENNAME, ORDER_BY_PRIORITY, ORDER_BY_SPACE, PRIORITY_TABLE, SEARCH_KEYWORD } from '../data/metadata';
+import { BUDGET_CRITERION, CURRENT_ORDER, NO_SUCH_KEY, ORDER_BY_CIRCLE_NAME, ORDER_BY_PENNAME, ORDER_BY_PRIORITY, ORDER_BY_SPACE, SEARCH_KEYWORD } from '../data/constants';
 import { setCurrentBudget, setCurrentOrderMode } from '../data/store';
 import { useDispatch, useSelector } from 'react-redux';
-import { calculateCurrentBudget } from '../function/function';
+import { calculateCurrentBudget, getBudgetCrioterion, getPrioritySet } from '../backend/function/function';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
-import { db } from '../backend/db';
+import { getMetadata, insertMetadata, updateMetadata } from '../backend/controller/metadataController';
 
 const MODES = {
   by_circle: {
@@ -21,37 +21,6 @@ const MODES = {
     key: 180,
     title: '서클위치'
   }
-}
-
-function getPrioritySet() {
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(`
-        SELECT * FROM ${ PRIORITY_TABLE };
-      `, [ ], (tx, result) => {
-        const data = { };
-        for (let i = 0; i < result.rows.length; i++) {
-          data[result.rows.item(i).priority]  = {
-            title: result.rows.item(i).title,
-            color: result.rows.item(i).color,
-            isChecked: false
-          };
-        }
-        tx.executeSql(`
-          SELECT key, value FROM ${ METADATA_TABLE }
-          WHERE key = '${ BUDGET_CRITERION }';
-        `, [ ], (tx, result) => {
-          const criterionArray = result.rows.item(0).value.split(/,+/);
-          for (let i of criterionArray) {
-            if (i != '') {
-              data[i].isChecked = true;
-            }
-          }
-          resolve(data);
-        });
-      });
-    });
-  });
 }
 
 function HomeToolbar() {
@@ -73,9 +42,23 @@ function HomeToolbar() {
           console.log(err);
           dispatch(setCurrentBudget(0));
         });
-    getPrioritySet().then((result) => setPrioritySet(result));
+    getPrioritySet()
+        .then((ps) => {
+          getBudgetCrioterion()
+              .then((bc) => {
+                data = { };
+                for (let i = 0; i < ps.length; i++) {
+                  data[ps[i].priority] = {
+                    title: ps[i].title,
+                    color: ps[i].color,
+                    isChecked: bc.includes(ps[i].priority)
+                  };
+                }
+                console.log('here', data);
+                setPrioritySet(data);
+              });
+        });
   }, [ ]);
-
   return (
     <View style={ styles.container }>
       <Modal
@@ -215,31 +198,23 @@ function onListItemPress(setSelectedOrder, to) {
 }
 
 async function onOrderButtonPress(to, dispatch) {
-  await db.transaction((tx) => {
-    tx.executeSql(`
-      SELECT key, value FROM ${ METADATA_TABLE } 
-      WHERE key = '${ CURRENT_ORDER }';
-    `, [ ], async (tx, result) => {
-      if (result.rows.length == 0) {
-        console.log('INSERT');
-        await tx.executeSql(`
-          INSERT INTO ${ METADATA_TABLE } VALUES
-            ('${ CURRENT_ORDER }', ${ to });
-        `);
-      } else {
-        console.log('UPDATE');
-        await tx.executeSql(`
-          UPDATE ${ METADATA_TABLE } SET value = '${ to }' WHERE key = '${ CURRENT_ORDER }';
-        `);
-      }
-      console.log('dispatch');
-      dispatch(setCurrentOrderMode(Math.random()));
-    });
-  });
+  getMetadata(CURRENT_ORDER)
+      .then((result) => {
+        console.log(result.responseCode == NO_SUCH_KEY);
+        console.log(result.responseCode);
+        if (result.responseCode == NO_SUCH_KEY) {
+          insertMetadata(CURRENT_ORDER, to)
+              .then((result) => dispatch(setCurrentOrderMode(Math.random())));
+        } else {
+          updateMetadata(CURRENT_ORDER, to)
+              .then((result) => dispatch(setCurrentOrderMode(Math.random())));
+        }
+      });
 }
 
 function onSearchButtonPress(searchMode, searchText, dispatch) {
   let sql = 'WHERE ';
+  console.log('start', sql);
   switch (searchMode.key) {
     case MODES.by_circle.key:
       sql += 'p.circle_name LIKE ';
@@ -252,30 +227,22 @@ function onSearchButtonPress(searchMode, searchText, dispatch) {
       break;
   }
   if (searchText == '') {
-    sql += `''%''`;
+    sql += `'%'`;
   } else {
-    sql += `''%${ searchText }%''`;
+    sql += `'%${ searchText }%'`;
   }
-  db.transaction((tx) => {
-    tx.executeSql(`
-      SELECT key, value FROM ${ METADATA_TABLE }
-      WHERE key = '${ SEARCH_KEYWORD }';
-    `, [ ], (tx, result) => {
-      if (result.rows.length == 0) {
-        tx.executeSql(`
-          INSERT INTO ${ METADATA_TABLE } VALUES
-              ('${ SEARCH_KEYWORD }', '${ sql }');
-        `, [ ], (tx, result) => dispatch(setCurrentOrderMode(Math.random())),
-        (err) => console.error(err));
-      } else {
-        tx.executeSql(`
-          UPDATE ${ METADATA_TABLE } SET value = '${ sql }'
-          WHERE key = '${ SEARCH_KEYWORD }';
-        `, [ ], (tx, result) => dispatch(setCurrentOrderMode(Math.random())),
-        (err) => console.error(err));
-      }
-    });
-  });
+  console.log(sql);
+  getMetadata(SEARCH_KEYWORD)
+      .then((result) => {
+        console.log('search keyword:', result);
+        if (result.responseCode == NO_SUCH_KEY) {
+          insertMetadata(SEARCH_KEYWORD, sql)
+              .then((result) => dispatch(setCurrentOrderMode(Math.random())));
+        } else {
+          updateMetadata(SEARCH_KEYWORD, sql)
+              .then((result) => dispatch(setCurrentOrderMode(Math.random())));
+        }
+      });
 }
 
 function applyBudgetCriterion(prioritySet, dispatch) {
@@ -285,11 +252,8 @@ function applyBudgetCriterion(prioritySet, dispatch) {
   const val4 = prioritySet[4].isChecked ? '4' : '';
   const val5 = prioritySet[5].isChecked ? '5' : '';
   const value = `${ val1 },${ val2 },${ val3 },${ val4 },${ val5 }`;
-  db.transaction((tx) => {
-    tx.executeSql(`
-      UPDATE ${ METADATA_TABLE } SET value = '${ value }' WHERE key = '${ BUDGET_CRITERION }';
-    `, [ ], (tx, result) => calculateCurrentBudget().then((result) => dispatch(setCurrentBudget(result))));
-  });
+  updateMetadata(BUDGET_CRITERION, value)
+      .then((result) => calculateCurrentBudget().then((result) => dispatch(setCurrentBudget(result))));
 }
 
 const styles = StyleSheet.create({

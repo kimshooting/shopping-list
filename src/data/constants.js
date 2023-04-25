@@ -47,3 +47,8 @@ export const EXPORT_IMAGE_FILES_DIR = documentDirectory + 'to_export/image/';
 export const EXPORT_CIRCLE_IMAGES_DIR = documentDirectory + 'to_export/image/circle/';
 export const EXPORT_WORK_IMAGES_DIR = documentDirectory + 'to_export/image/work/';
 export const EXPORT_TARGET_ARCHIVE = documentDirectory + 'shared_data.zip';
+
+// Response code
+export const OK = 200;
+export const NO_SUCH_KEY = 534;
+export const DATA_IS_EMPTY = 562;

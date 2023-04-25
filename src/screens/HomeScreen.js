@@ -1,17 +1,22 @@
 import { FlatList, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { BUDGET_CRITERION, CIRCLE_PARTICIPATE_TABLE, CURRENT_ORDER, DEFAULT_IMAGE, METADATA_TABLE, ORDER_BY_CIRCLE_NAME, ORDER_BY_PENNAME, ORDER_BY_PRIORITY, ORDER_BY_SPACE, PRIORITY_TABLE, REGISTERED_TABLE, SEARCH_KEYWORD, WORK_TABLE } from "../data/metadata";
+import { DEFAULT_IMAGE } from "../data/constants";
 import { useEffect, useState } from "react";
 import HomeToolbar from "../toolbar/HomeToolbar";
 import { useDispatch, useSelector } from "react-redux";
 import { setCurrentBudget } from "../data/store";
-import { db } from "../backend/db";
+import { getRegisteredCircleData } from "../backend/controller/registeredCircleController";
+import { getBudgetCrioterion } from "../backend/function/function";
+import { getWorkDataWithPriority, updateWorkData } from "../backend/controller/workDataController";
 
 function HomeScreen({ navigation }) {
   const [ registeredCircleList, setRegisteredCircleList ] = useState([ ]);
   const currentOrderMode = useSelector((state) => state.currentOrderMode);
 
   useEffect(() => {
-    init(setRegisteredCircleList, navigation);
+    getRegisteredCircleData()
+        .then((result) => {
+          setRegisteredCircleList(result.response);
+         });
   }, [ currentOrderMode ]);
 
   const [ budgetCriterion, setBudgetCriterion ] = useState([ ]);
@@ -19,14 +24,21 @@ function HomeScreen({ navigation }) {
   useEffect(() => {
     const focusHandler = navigation.addListener('focus', () => {
       console.log('refresh');
-      init(setRegisteredCircleList, navigation);
+      getRegisteredCircleData()
+          .then((result) => {
+            setRegisteredCircleList(result.response);
+          });
     });
     return focusHandler;
   }, [ navigation ]);
 
   const currentBudget = useSelector((state) => state.currentBudget);
+  console.log('currentBudget', currentBudget)
   useEffect(() => {
-    applyBudgetCriterion(setBudgetCriterion);
+    getBudgetCrioterion()
+        .then((result) => {
+          setBudgetCriterion(result);
+        });
   }, [ currentBudget ]);
 
   return (
@@ -40,102 +52,6 @@ function HomeScreen({ navigation }) {
   );
 }
 
-function init(setRegisteredCircleList, navigation) {
-  db.transaction((tx) => {
-    tx.executeSql(`
-      SELECT * FROM ${METADATA_TABLE}
-      WHERE key = '${CURRENT_ORDER}';
-    `, [], (tx, result) => {
-      const len = result.rows.length;
-      if (len == 0) {
-        tx.executeSql(`
-          INSERT INTO ${METADATA_TABLE} (key, value) VALUES
-            ('${CURRENT_ORDER}', ${ORDER_BY_PRIORITY});
-        `);
-        selectRecords(ORDER_BY_PRIORITY, setRegisteredCircleList, navigation);
-      } else {
-        selectRecords(result.rows.item(0).value, setRegisteredCircleList, navigation);
-      }
-    }, (err) => {
-      console.log(err);
-      navigation('Home');
-    });
-  });
-}
-
-async function selectRecords(orderMode, setRegisteredCircleList, navigation) {
-  let orderBySql = '';
-  switch (parseInt(orderMode)) {
-    case ORDER_BY_PRIORITY:
-      orderBySql = 'ORDER BY pr.priority ASC;';
-      break;
-    case ORDER_BY_CIRCLE_NAME:
-      orderBySql = 'ORDER BY p.circle_name ASC, pr.priority ASC';
-      break;
-    case ORDER_BY_PENNAME:
-      orderBySql = 'ORDER BY p.penname ASC, pr.priority ASC';
-      break;
-    case ORDER_BY_SPACE:
-      orderBySql = 'ORDER BY p.id ASC';
-      break;
-    default:
-      orderBySql = '';
-  }
-
-  let whereStatement = '';
-  await db.transaction((tx) => {
-    tx.executeSql(`
-          SELECT key, value FROM ${METADATA_TABLE} WHERE key = '${SEARCH_KEYWORD}';
-        `, [], (tx, result) => {
-      const len = result.rows.length;
-      if (len != 0) {
-        whereStatement = result.rows.item(0).value;
-      }
-    });
-  });
-
-  await db.transaction((tx) => {
-    tx.executeSql(`
-      SELECT r.id, r.circle_image_path, p.id AS circle_id, p.space, p.penname, p.circle_name,
-              pr.priority, pr.title, pr.color
-      FROM ${REGISTERED_TABLE} AS r
-      INNER JOIN ${CIRCLE_PARTICIPATE_TABLE} AS p ON r.circle_id = p.id
-      INNER JOIN ${PRIORITY_TABLE} AS pr ON r.priority = pr.priority
-      ${whereStatement}
-      ${orderBySql};
-    `, [], (tx, result) => {
-      const len = result.rows.length;
-      const data = [];
-      for (let i = 0; i < len; i++) {
-        data.push(result.rows.item(i));
-      }
-      setRegisteredCircleList(data);
-    }, (err) => {
-      console.log(err);
-      navigation.navigate('Home');
-    });
-  });
-}
-
-function applyBudgetCriterion(setBudgetCriterion) {
-  db.transaction((tx) => {
-    tx.executeSql(`
-      SELECT key, value FROM ${ METADATA_TABLE }
-      WHERE key = '${ BUDGET_CRITERION }';
-    `, [ ], (tx, result) => {
-      const criterionArray = result.rows.item(0).value.split(/,+/);
-      for (let i = 0; i < criterionArray.length; i++) {
-        try {
-          criterionArray[i] = parseInt(criterionArray[i]);
-        } catch (err) {
-          
-        }
-      }
-      setBudgetCriterion(criterionArray);
-    }, (err) => console.log(err));
-  });
-}
-
 function ListItem({ data, navigation, budgetCriterion }) {
   const defaultImage = data.circle_image_path == DEFAULT_IMAGE;
   const priorityColorBox = {
@@ -145,32 +61,19 @@ function ListItem({ data, navigation, budgetCriterion }) {
   }
 
   const [ workDataList, setWorkDataList ] = useState([ ]);
-  const doDBTask = () => {
-    db.transaction((tx) => {
-      tx.executeSql(`
-        SELECT w.id, w.title, w.checked, w.image_path,
-               w.priority, w.price, w.circle_id, pr.color
-        FROM ${ WORK_TABLE } AS w
-        INNER JOIN ${ PRIORITY_TABLE } AS pr ON w.priority = pr.priority
-        WHERE w.circle_id = ${ data.circle_id }
-        ORDER BY w.checked ASC, w.priority ASC;
-      `, [ ], (tx, result) => {
-        const len = result.rows.length;
-        const data = [ ];
-        for (let i = 0; i < len; i++) {
-          data.push(result.rows.item(i));
-        }
-        setWorkDataList(data);
-      }, (err) => console.error(err));
-    });
+
+  const baseWork = () => {
+    getWorkDataWithPriority('', [ 1, 2, 3, 4, 5 ], -1, true, data.circle_id,
+        false)
+        .then((result) => setWorkDataList(result.response));
   }
 
   useEffect(() => {
-    doDBTask();
+    baseWork();
   }, [ ]);
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => doDBTask());
+    const unsubscribe = navigation.addListener('focus', () => baseWork());
     return unsubscribe;
   }, [ navigation ]);
   
@@ -191,7 +94,7 @@ function ListItem({ data, navigation, budgetCriterion }) {
       </TouchableOpacity>
       <FlatList
           data={ workDataList }
-          renderItem={ ({ item }) => <WorkListItem data={ item } onPressFunc={ doDBTask } budgetCriterion={ budgetCriterion } /> }
+          renderItem={ ({ item }) => <WorkListItem data={ item } onPressFunc={ baseWork } budgetCriterion={ budgetCriterion } /> }
           keyExtractor={ (item) => item.id }
           horizontal />
     </View>
@@ -208,18 +111,21 @@ function WorkListItem({ data, onPressFunc, budgetCriterion }) {
     borderColor: data.color,
   };
 
-  const budgetTask = () => {
-    if (budgetCriterion.includes(data.priority)) {
-      const pmBudget = data.checked == 1 ? data.price : -data.price;
-      dispatch(setCurrentBudget(currentBudget + pmBudget));
-    }
-  }
-
   const [ isDefaultImageMode, setIsDefaultImageMode ] = useState(data.checked == '0');
 
   const currentBudget = useSelector((state) => state.currentBudget);
   const isPriceVisible = useSelector((state) => state.isPriceVisible);
   const isWorkTitleVisible = useSelector((state) => state.isWorkTitleVisible);
+
+  const budgetTask = () => {
+    console.log(budgetCriterion);
+    if (budgetCriterion.includes(data.priority)) {
+      const pmBudget = data.checked == 1 ? data.price : -data.price;
+      dispatch(setCurrentBudget(currentBudget + pmBudget));
+    } else {
+      dispatch(setCurrentBudget(currentBudget));
+    }
+  }
   
   return (
     <TouchableOpacity
@@ -244,12 +150,14 @@ function WorkListItem({ data, onPressFunc, budgetCriterion }) {
 
 function onPressImage(data, isDefaultImageMode, setIsDefaultImageMode) {
   setIsDefaultImageMode(!isDefaultImageMode);
-  db.transaction((tx) => {
-    tx.executeSql(`
-      UPDATE ${ WORK_TABLE } SET checked = ${ isDefaultImageMode ? 1 : 0 }
-      WHERE id = ${ data.id };
-    `, [ ], (tx, result) => { }, (err) => console.error(err));
-  });
+  const to = [
+    {
+      column: 'checked',
+      value: isDefaultImageMode ? 1 : 0
+    }
+  ];
+  const ids = [ data.id ];
+  updateWorkData(to, ids);
 }
 
 function CheckedImage({ style, source }) {

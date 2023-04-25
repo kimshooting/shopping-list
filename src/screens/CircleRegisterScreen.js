@@ -2,10 +2,9 @@ import { useEffect, useState } from 'react';
 import { Button, Image, SafeAreaView, StyleSheet, Text, ToastAndroid, View } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useSelector } from 'react-redux';
-import { CIRCLE_IMAGE_DIRECTORY, DEFAULT_IMAGE, PRIORITY_TABLE, REGISTERED_TABLE } from '../data/metadata';
 import { RadioButton } from 'react-native-paper';
-import { copyAsync } from 'expo-file-system';
-import { db } from '../backend/db';
+import { getPrioritySet } from '../backend/function/function';
+import { registerCircle } from '../backend/controller/registeredCircleController';
 
 function CircleRegisterScreen({ navigation }) {
   const selectedCircle = useSelector((state) => state.selectedCircle);
@@ -16,20 +15,7 @@ function CircleRegisterScreen({ navigation }) {
   const [ prioritySet, setPrioritySet ] = useState([ ]);
 
   useEffect(() => {
-    db.transaction((tx) => {
-      tx.executeSql(`
-        SELECT * FROM ${ PRIORITY_TABLE };
-      `, [ ], (tx, results) => {
-        const len = results.rows.length;
-        const data = [ ];
-        for (let i = 0; i < len; i++) {
-          data.push(results.rows.item(i));
-        }
-        setPrioritySet(data);
-      }, (err) => {
-        console.error(err);
-      });
-    });
+    getPrioritySet().then((result) => setPrioritySet(result));
   }, [ ]);
 
   const [ checked, setChecked ] = useState(1);
@@ -66,10 +52,7 @@ function CircleRegisterScreen({ navigation }) {
       <Button
           style={ styles.registerButton }
           title='등록'
-          onPress={ () => {
-                onRegister(selectedCircle, circleImage, checked);
-                navigation.goBack();
-              } } />
+          onPress={ () => onRegister(selectedCircle, circleImage, checked, navigation) } />
     </SafeAreaView>
   );
 }
@@ -84,32 +67,15 @@ async function selectImage(setCircleImage) {
   setCircleImage({ src: fileUri, isDefault: false });
 }
 
-function onRegister(selectedCircle, circleImage, checkedPriority) {
+function onRegister(selectedCircle, circleImage, checkedPriority, navigation) {
   if (Object.keys(selectedCircle) == 0) {
     ToastAndroid.show('서클을 선택하시오', ToastAndroid.SHORT);
     return;
   }
 
-  let imagePath = '';
-  if (!circleImage.isDefault) {
-    const filename = circleImage.src.split('/').pop();
-    imagePath = CIRCLE_IMAGE_DIRECTORY + filename;
-    copyAsync({
-      from: circleImage.src,
-      to: imagePath
-    }).then((result) => console.log(result)).catch((err) => {
-      console.error(err);
-    });
-  } else {
-    imagePath = DEFAULT_IMAGE;
-  }
-
-  db.transaction((tx) => {
-    tx.executeSql(`
-      INSERT INTO ${ REGISTERED_TABLE } (circle_image_path, circle_id, priority) VALUES
-        ('${ imagePath }', ${ selectedCircle.id }, ${ checkedPriority });
-    `, [ ], (tx, results) => console.log(results), (err) => console.log(err));
-  });
+  registerCircle(selectedCircle, circleImage, checkedPriority)
+      .then((result) => console.log(result));
+  navigation.goBack();
 }
 
 function RadioBtn({ item, checker }) {

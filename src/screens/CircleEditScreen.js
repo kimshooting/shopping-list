@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Alert, Button, FlatList, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { CIRCLE_PARTICIPATE_TABLE, DEFAULT_IMAGE, PRIORITY_TABLE, REGISTERED_TABLE, WORK_REGISTERED_TABLE, WORK_TABLE } from '../data/metadata';
+import { DEFAULT_IMAGE } from '../data/constants';
 import { RadioButton } from 'react-native-paper';
-import { deleteAsync } from 'expo-file-system';
-import { db } from '../backend/db';
+import { getPrioritySet } from '../backend/function/function';
+import { getWorkData } from '../backend/controller/workDataController';
+import { onDeleteCircle, updateRegisteredCircleDataById } from '../backend/controller/registeredCircleController';
 
 function CircleEditScreen({ route, navigation }) {
   const dataFromPrevious = route.params.data;
@@ -12,45 +13,21 @@ function CircleEditScreen({ route, navigation }) {
   const [ checked, setChecked ] = useState(dataFromPrevious.priority);
   const [ workList, setWorkList ] = useState([ ]);
 
-  const dbTask = async () => {
-    await db.transaction((tx) => {
-      tx.executeSql(`
-        SELECT * FROM ${ PRIORITY_TABLE };
-      `, [ ], (tx, result) => {
-        const len = result.rows.length;
-        const data = [ ];
-        for (let i = 0; i < len; i++) {
-          data.push(result.rows.item(i));
-        }
-        setPrioritySet(data);
-      }, (err) => console.error(err));
-    });
-
-    await db.transaction((tx) => {
-      tx.executeSql(`
-        SELECT id, title, checked, image_path,
-               priority, price
-        FROM ${ WORK_TABLE }
-        WHERE circle_id = ${ dataFromPrevious.circle_id }
-        ORDER BY priority;
-      `, [ ], (tx, result) => {
-        const len = result.rows.length;
-        const data = [ ];
-        for (let i = 0; i < len; i++) {
-          data.push(result.rows.item(i));
-        }
-        setWorkList(data);
-      }, (err) => console.error(err));
-    });
-  };
+  const init = async () => {
+    const prioritySet = await getPrioritySet();
+    const workQueryResult = await getWorkData('', [ 1, 2, 3, 4, 5 ],
+        -1, true, dataFromPrevious.circle_id, false);
+    setPrioritySet(prioritySet);
+    setWorkList(workQueryResult.response);
+  }
 
   useEffect(() => {
-    dbTask();
+    init();
   }, [ ]);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      dbTask();
+      init();
     });
     return unsubscribe;
   }, [ navigation ]);
@@ -100,24 +77,13 @@ function toAddWork(navigation, dataFromPrevious) {
   navigation.navigate('AddWork', { circleData: dataFromPrevious, isEdit: false, workData: workData });
 }
 
-function onDelete(navigation, circle_id, workList) {
-  const deleteCircle = () => {
-    db.transaction((tx) => {
-      tx.executeSql(`
-        DELETE FROM ${ WORK_TABLE }
-        WHERE circle_id = ${ circle_id };
-      `, [ ], (tx, result) => {
-        for (work of workList) {
-          deleteAsync(work.image_path, { idempotent: true });
-        }
-        tx.executeSql(`
-          DELETE FROM ${ REGISTERED_TABLE }
-          WHERE circle_id = ${ circle_id };
-        `, [ ], (tx, result) => {
+function onDelete(navigation, circleId, workList) {
+  const deleteCircle = async () => {
+    onDeleteCircle(circleId, workList)
+        .then((result) => {
+          console.log('delete complete');
           navigation.goBack();
         });
-      }, (err) => console.error(err));
-    });
   }
   Alert.alert('', '정말 삭제하겠습니까?', [
     {
@@ -143,12 +109,14 @@ function RadioBtn({ item, checker, current }) {
             value={ item.title }
             status={ checked == item.priority ? 'checked' : 'unchecked' }
             onPress={ async () => {
-              db.transaction((tx) => {
-                tx.executeSql(`
-                  UPDATE ${ REGISTERED_TABLE } SET priority = ${ item.priority }
-                  WHERE id = ${ current.id };
-                `);
-              });
+              const to = [
+                {
+                  column: 'priority',
+                  value: item.priority
+                }
+              ];
+              const ids = [ current.id ];
+              updateRegisteredCircleDataById(to, ids);
               setChecked(item.priority);
             } } />
       <View style={ styleObj } />

@@ -1,5 +1,5 @@
 import SQLite from 'react-native-sqlite-storage';
-import { initApp } from '../initApp';
+import { initTask } from './initTask';
 
 export var db;
 
@@ -21,8 +21,8 @@ export function init() {
   return new Promise((resolve, reject) => {
     db = SQLite.openDatabase({name: 'my.db', location: 'default'}, async () => {
       console.log('success open db');
-      await initApp();
-      resolve();
+      initTask()
+          .then((result) => resolve(null));
     }, (err) => console.error(err));
   });
 }

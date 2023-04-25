@@ -1,9 +1,9 @@
-import { BUDGET_CRITERION, CIRCLE_IMAGE_DIRECTORY, CIRCLE_PARTICIPATE_TABLE, IS_PRICE_VISIBLE, IS_WORK_TITLE_VISIBLE, METADATA_TABLE, PRIORITY_TABLE, REGISTERED_TABLE, WORK_IMAGE_DIRECTORY, WORK_TABLE } from './data/metadata';
+import { BUDGET_CRITERION, CIRCLE_IMAGE_DIRECTORY, CIRCLE_PARTICIPATE_TABLE, IS_PRICE_VISIBLE, IS_WORK_TITLE_VISIBLE, METADATA_TABLE, PRIORITY_TABLE, REGISTERED_TABLE, WORK_IMAGE_DIRECTORY, WORK_TABLE } from '../data/constants';
 import { getInfoAsync, makeDirectoryAsync } from 'expo-file-system';
-import { executeDBUnit } from './backend/db';
+import { executeDBUnit } from './db';
 
 
-export async function initApp() {
+export async function initTask() {
   console.log('init app');
 
   const query1 = `
@@ -135,4 +135,5 @@ export async function initApp() {
       `, (tx, result) => console.log('is_work_title_visible: inserted'), (err) => console.err(err));
     }
   }, (err) => console.error(err));
+  return null;
 }

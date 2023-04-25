@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Button, FlatList, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { CIRCLE_PARTICIPATE_TABLE } from '../data/metadata';
 import { useDispatch } from 'react-redux';
 import { setSelectedCircle } from '../data/store';
-import { db } from '../backend/db';
+import { getAllCircleData, searchCircle } from '../backend/controller/allCircleController';
 
 function CircleSelectScreen({ navigation }) {
   const [ searchText, setSearchText ] = useState('');
@@ -12,21 +11,8 @@ function CircleSelectScreen({ navigation }) {
   const [ list, setList ] = useState([ ]);
 
   useEffect(() => {
-    db.transaction((tx) => {
-      tx.executeSql(`
-        SELECT * FROM ${ CIRCLE_PARTICIPATE_TABLE };
-      `, [ ], (tx, results) => {
-        const len = results.rows.length;
-        const data = [ ];
-        for (let i = 0; i < len; i++) {
-          const obj = results.rows.item(i);
-          obj.selected = false;
-          data.push(obj);
-        }
-        setList(data);
-      },
-      (err) => console.error(err));
-    });
+    getAllCircleData()
+        .then((result) => setList(result.response));
   }, [ ]);
 
   const selectedFileInitialStateData = {
@@ -43,7 +29,8 @@ function CircleSelectScreen({ navigation }) {
         <TextInput style={ styles.searchTextInput }
             onChangeText={ e => setSearchText(e) } />
         <Button title='검색' style={ styles.searchButton }
-            onPress={ () => search(searchText, setList, selectedFile) } />
+            onPress={ () => searchCircle(searchText, selectedFile.id)
+                .then((result) => setList(result.response)) } />
       </View>
       <Button
           title='선택완료'
@@ -66,28 +53,6 @@ function Item({ data, onPress }) {
       <Text style={ styles.circle }>{ data.circle_name }</Text>
     </TouchableOpacity>
   );
-}
-
-function search(searchText, setList, selectedFile) {
-  const query = `
-    SELECT * FROM ${ CIRCLE_PARTICIPATE_TABLE }
-    WHERE circle_name LIKE '%${ searchText }%';
-  `;
-  db.transaction((tx) => {
-    tx.executeSql(query, [ ], (tx, results) => {
-      const len = results.rows.length;
-      const data = [ ];
-      for (let i = 0; i < len; i++) {
-        const obj = results.rows.item(i);
-        obj.selected = obj.id == selectedFile.id ? true : false;
-        data.push(obj);
-      }
-      setList(data);
-      for (let i = 0; i < data.length; i++) {
-        console.log(data[i]);
-      }
-    });
-  });
 }
 
 function onItemPress(list, setList, data, selectedFile, setSelectedFile) {

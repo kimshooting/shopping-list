@@ -1,10 +1,10 @@
 import { StorageAccessFramework } from 'expo-file-system';
 import { Alert, Button, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
-import { METADATA_TABLE, DIRECTORY_URI_FOR_FETCH_CIRCLE_DATA, DIRECTORY_URI_FOR_FETCH_SHARED_DATA, IS_WORK_TITLE_VISIBLE, IS_PRICE_VISIBLE } from '../data/metadata';
-import { db } from '../backend/db';
+import { DIRECTORY_URI_FOR_FETCH_CIRCLE_DATA, DIRECTORY_URI_FOR_FETCH_SHARED_DATA, IS_WORK_TITLE_VISIBLE, IS_PRICE_VISIBLE } from '../data/constants';
 import BouncyCheckbox from 'react-native-bouncy-checkbox';
 import { useDispatch, useSelector } from 'react-redux';
 import { setIsPriceVisible, setIsWorkTitleVisible } from '../data/store';
+import { getMetadata, updateMetadata } from '../backend/controller/metadataController';
 
 function SettingsScreen({ navigation }) {
   const dispatch = useDispatch();
@@ -51,7 +51,7 @@ function SettingsScreen({ navigation }) {
               ]);
             } } />
         <Button
-            title='데이터 공유'
+            title='데이터 공유 (백업)'
             onPress={ () => {
               Alert.alert('', '등록된 서클 데이터, 작품 데이터를 zip 파일로 압축하여 공유합니다.', [
                 {
@@ -85,33 +85,15 @@ function onCheckboxPress(isChecked, isWorkTitleVisibleCheckbox, dispatch) {
   const key = isWorkTitleVisibleCheckbox ? IS_WORK_TITLE_VISIBLE : IS_PRICE_VISIBLE;
   const value = isChecked ? '1' : '0';
   const setMethod = isWorkTitleVisibleCheckbox ? setIsWorkTitleVisible : setIsPriceVisible;
-  db.transaction((tx) => {
-    tx.executeSql(`
-      UPDATE ${ METADATA_TABLE } SET value = '${ value }'
-      WHERE key = '${ key }';
-    `, [ ], (tx, result) => {
-      dispatch(setMethod(isChecked));
-    });
-  });
+  updateMetadata(key, value)
+      .then((result) => {
+        dispatch(setMethod(isChecked));
+      });
 }
 
 function fetchData(navigation, key, where) {
-  db.transaction((tx) => {
-    tx.executeSql(`
-      SELECT key, value FROM ${ METADATA_TABLE } WHERE key = '${ key }';
-    `, [ ], async (tx, result) => {
-      const len = result.rows.length;
-      if (len == 0) {
-        await tx.executeSql(`
-          INSERT INTO ${ METADATA_TABLE } (key, value) VALUES
-            ('${ key }', '');
-        `);
-        readDirectoryAndMoveTo(navigation, '', key, where);
-      } else {
-        readDirectoryAndMoveTo(navigation, result.rows.item(0).value, key, where);
-      }
-    });
-  });
+  getMetadata(key, '', true)
+      .then((result) => readDirectoryAndMoveTo(navigation, result.response, key, where));
 }
 
 async function readDirectoryAndMoveTo(navigation, dir, key, where) {
@@ -125,12 +107,7 @@ async function readDirectoryAndMoveTo(navigation, dir, key, where) {
     const getPermission = async () => {
       const permissions = await StorageAccessFramework.requestDirectoryPermissionsAsync();
       if (permissions.granted) {
-        db.transaction((tx) => {
-          tx.executeSql(`
-            UPDATE ${ METADATA_TABLE } SET value = '${ permissions.directoryUri }'
-            WHERE key = '${ key }';
-          `);
-        });
+        updateMetadata(key, permissions.directoryUri);
       }
     }
     Alert.alert('데이터 위치 설정', '데이터의 위치를 설정해 주세요', [

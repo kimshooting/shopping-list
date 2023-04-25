@@ -1,8 +1,7 @@
 import { readAsStringAsync } from 'expo-file-system';
 import { useEffect, useState } from 'react';
 import { Button, FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity } from 'react-native';
-import { CIRCLE_PARTICIPATE_TABLE } from '../data/metadata';
-import { db } from '../backend/db';
+import { insertAllCircleData, truncateAllCircleData } from '../backend/controller/allCircleController';
 
 function FileSearchScreen({ route, navigation }) {
   const fileList = route.params.data;
@@ -82,24 +81,8 @@ function loadData(uri, navigation) {
 }
 
 async function forCircleData(jsonObj) {
-  await db.transaction((tx) => {
-    tx.executeSql(`DELETE FROM ${ CIRCLE_PARTICIPATE_TABLE };`, [ ], (tx, results) => console.log('delete success'),
-    (err) => console.error(err));
-  });
-  let sql = `INSERT INTO ${ CIRCLE_PARTICIPATE_TABLE } (space, penname, circle_name) VALUES `
-  for (let obj of jsonObj) {
-    obj.space = obj.space.replace('\'', '\'\'').replace('"', '""');
-    obj.penname = obj.penname.replace('\'', '\'\'').replace('"', '""');
-    obj.circlename = obj.circlename.replace('\'', '\'\'').replace('"','""');
-    const line = `('${ obj.space }', '${ obj.penname }', '${ obj.circlename }'),`;
-    sql += line;
-  };
-  sql = sql.substring(0, sql.length - 1);
-  sql += ';';
-  await db.transaction((tx) => {
-    tx.executeSql(sql, [ ], (tx, results) => console.log('insert success'),
-    (err) => console.error(err));
-  });
+  truncateAllCircleData();
+  insertAllCircleData(jsonObj);
 }
 
 const styles = StyleSheet.create({

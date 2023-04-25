@@ -1,10 +1,9 @@
-import { deleteAsync, documentDirectory } from 'expo-file-system';
 import { BackHandler, Text, View } from 'react-native';
-import { CIRCLE_IMAGE_DIRECTORY, CIRCLE_PARTICIPATE_TABLE, DIRECTORY_URI_FOR_FETCH_SHARED_DATA, METADATA_TABLE, PRIORITY_TABLE, REGISTERED_TABLE, WORK_IMAGE_DIRECTORY, WORK_TABLE } from '../data/metadata';
-import { db } from '../backend/db';
+import { init } from '../backend/db';
+import { cleanWholeData } from '../backend/function/cleanWholeData';
 
 function LoadingForCleanWholeDataScreen({ navigation }) {
-  deleteProcess(navigation);
+  process(navigation);
   return (
     <View style={ { flex: 1, alignItems: 'center', justifyContent: 'center' } }>
       <Text style={ { color: '#000' } }>삭제 중</Text>
@@ -12,40 +11,15 @@ function LoadingForCleanWholeDataScreen({ navigation }) {
   );
 }
 
-async function deleteProcess(navigation) {
-  await deleteAsync(CIRCLE_IMAGE_DIRECTORY, { idempotent: true });
-  await deleteAsync(WORK_IMAGE_DIRECTORY, { idempotent: true });
-  await db.transaction((tx) => {
-    tx.executeSql(`
-      SELECT key, value FROM ${ METADATA_TABLE }
-      WHERE key = '${ DIRECTORY_URI_FOR_FETCH_SHARED_DATA }';
-    `, [ ], (tx, result) => {
-      if (result.rows.length != 0) {
-        const value = result.rows.item(0).value;
-        const dirName = value.split('%2F').pop();
-        deleteAsync(documentDirectory + dirName, { idempotent: true });
-      }
-    });
-  });
-  await db.transaction((tx) => {
-    tx.executeSql(`DROP TABLE IF EXISTS ${ WORK_TABLE }`);
-  });
-  await db.transaction((tx) => {
-    tx.executeSql(`DROP TABLE IF EXISTS ${ REGISTERED_TABLE }`);
-  });
-  await db.transaction((tx) => {
-    tx.executeSql(`DROP TABLE IF EXISTS ${ PRIORITY_TABLE }`);
-  });
-  await db.transaction((tx) => {
-    tx.executeSql(`DROP TABLE IF EXISTS ${ CIRCLE_PARTICIPATE_TABLE }`);
-  });
-  await db.transaction((tx) => {
-    tx.executeSql(`DROP TABLE IF EXISTS ${ METADATA_TABLE }`);
-  });
-  init().then((result) => {
-    navigation.goBack();
-    BackHandler.exitApp();
-  });
+function process(navigation) {
+  cleanWholeData()
+      .then((result) => {
+        console.log(result);
+        init().then((result) => {
+          navigation.goBack();
+          BackHandler.exitApp();
+        });
+      });
 }
 
 export default LoadingForCleanWholeDataScreen;

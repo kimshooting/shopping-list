@@ -12,9 +12,8 @@ import LoadingForExportingDataScreen from "../screens/LoadingForExportingDataScr
 import { useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
 import { db } from "../backend/db";
-import { IS_PRICE_VISIBLE, IS_WORK_TITLE_VISIBLE, METADATA_TABLE } from "../data/metadata";
+import { IS_PRICE_VISIBLE, IS_WORK_TITLE_VISIBLE, METADATA_TABLE } from "../data/constants";
 import { setIsPriceVisible, setIsWorkTitleVisible } from "../data/store";
-import FootTrafficSettingScreen from "../screens/JapaneseCheatSheetScreen";
 
 const Stack = createNativeStackNavigator();
 

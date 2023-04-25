@@ -2,12 +2,10 @@ import { useEffect, useState } from 'react';
 import { Button, Image, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { RadioButton } from 'react-native-paper';
-import { DEFAULT_IMAGE, DEFAULT_WORK_TITLE, PRIORITY_TABLE, WORK_IMAGE_DIRECTORY, WORK_REGISTERED_TABLE, WORK_TABLE } from '../data/metadata';
-import { copyAsync, moveAsync } from 'expo-file-system';
-import { calculateCurrentBudget } from '../function/function';
+import { DEFAULT_IMAGE } from '../data/constants';
+import { getPrioritySet } from '../backend/function/function';
 import { useDispatch } from 'react-redux';
-import { setCurrentBudget } from '../data/store';
-import { db } from '../backend/db';
+import { completeAddingWork } from '../backend/controller/workDataController';
 
 function AddWorkScreen({ route, navigation }) {
   const circleData = route.params.circleData;
@@ -26,18 +24,8 @@ function AddWorkScreen({ route, navigation }) {
   const [ checked, setChecked ] = useState(workData.priority);
 
   useEffect(() => {
-    db.transaction((tx) => {
-      tx.executeSql(`
-        SELECT * FROM ${ PRIORITY_TABLE };
-      `, [ ], (tx, result) => {
-        const len = result.rows.length;
-        const data = [ ];
-        for (let i = 0; i < len; i++) {
-          data.push(result.rows.item(i));
-        }
-        setPrioritySet(data);
-      }, (err) => console.error(err));
-    });
+    getPrioritySet()
+        .then((result) => setPrioritySet(result));
   }, [ ]);
 
   const [ title, setTitle ] = useState(workData.title);
@@ -123,46 +111,7 @@ function RadioBtn({ item, checker }) {
 }
 
 async function onComplete(data, navigation, isEdit, dispatch) {
-  console.log(data);
-  if (data.title == '') {
-    data.title = DEFAULT_WORK_TITLE;
-  }
-  data.title = data.title.replace(`'`, `''`);
-  if (data.price == '') {
-    data.price = '0';
-  }
-  if (data.image.isDefault) {
-    data.image.src = DEFAULT_IMAGE;
-  } else {
-    const filename = data.image.src.split('/').pop();
-    const imagePath = WORK_IMAGE_DIRECTORY + filename;
-    await moveAsync({
-          from: data.image.src,
-          to: imagePath
-        }).then((result) => console.log(result))
-        .catch((err) => console.error(err));
-    data.image.src = imagePath;
-  }
-
-  let sql = '';
-  if (isEdit) {
-    console.log('update');
-    sql = `
-        UPDATE ${ WORK_TABLE } SET title = '${ data.title }', checked = ${ data.checked }, image_path = '${ data.image.src }',
-            priority = ${ data.priority }, price = ${ data.price } WHERE id = ${ data.id };`;
-  } else {
-    console.log('insert');
-    sql = `
-        INSERT INTO ${ WORK_TABLE } (title, checked, image_path, priority, price, circle_id) VALUES
-          ('${ data.title }', ${ data.checked }, '${ data.image.src }', ${ data.priority }, ${ data.price }, ${ data.circle_id });`
-  }
-
-  await db.transaction((tx) => {
-    tx.executeSql(sql, [ ], (tx, result) => console.log(result), (err) => console.log(err));
-  });
-
-  calculateCurrentBudget().then((result) => dispatch(setCurrentBudget(result)));
-
+  await completeAddingWork(data, isEdit, dispatch);
   navigation.goBack();
 }
 
