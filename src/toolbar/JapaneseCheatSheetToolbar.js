@@ -4,8 +4,11 @@ function JapaneseCheatSheetToolbar({ navigation }) {
   return (
     <View style={ styles.container }>
       <Button
-          title='동선 설정'
-          onPress={ () => navigation.navigate('FootTrafficSetting') } />
+          title='추가'
+          onPress={ () => console.log('add') } />
+      <Button
+          title='검색'
+          onPress={ () => console.log('search') } />
     </View>
   );
 }

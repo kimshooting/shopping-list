@@ -14,7 +14,7 @@ export const japaneseKorean = [
   {
     jap: '特大新刊セット下さい',
     pronounce: '토쿠다이 싱칸 셋또 쿠다사이',
-    kor: '특대 신간 세트 즈세요',
+    kor: '특대 신간 세트 주세요',
     description: ''
   },
   {
