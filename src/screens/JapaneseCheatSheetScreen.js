@@ -1,11 +1,9 @@
 import { FlatList, SafeAreaView, StyleSheet, Text, View } from "react-native";
-import JapaneseCheatSheetToolbar from "../toolbar/JapaneseCheatSheetToolbar";
 import { japaneseKorean } from "../data/japaneseCheatSheetDefaultData";
 
 function JapaneseCheatSheetScreen({ navigation }) {
   return (
     <SafeAreaView style={ styles.container }>
-      <JapaneseCheatSheetToolbar navigation={ navigation } />
       <FlatList
           data={ japaneseKorean }
           renderItem={ ({ item }) => <ListItem data={ item } /> }
