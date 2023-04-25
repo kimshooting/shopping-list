@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setCurrentBudget } from "../data/store";
 import { getRegisteredCircleData } from "../backend/controller/registeredCircleController";
 import { getBudgetCrioterion } from "../backend/function/function";
-import { getWorkDataWithPriority, updateWorkData } from "../backend/controller/workDataController";
+import { getWorkData, getWorkDataWithPriority, updateWorkData } from "../backend/controller/workDataController";
 
 function HomeScreen({ navigation }) {
   const [ registeredCircleList, setRegisteredCircleList ] = useState([ ]);
@@ -33,7 +33,6 @@ function HomeScreen({ navigation }) {
   }, [ navigation ]);
 
   const currentBudget = useSelector((state) => state.currentBudget);
-  console.log('currentBudget', currentBudget)
   useEffect(() => {
     getBudgetCrioterion()
         .then((result) => {
@@ -63,9 +62,17 @@ function ListItem({ data, navigation, budgetCriterion }) {
   const [ workDataList, setWorkDataList ] = useState([ ]);
 
   const baseWork = () => {
-    getWorkDataWithPriority('', [ 1, 2, 3, 4, 5 ], -1, true, data.circle_id,
-        false)
-        .then((result) => setWorkDataList(result.response));
+    getWorkDataWithPriority(title = '', priority = [ 1, 2, 3, 4, 5 ], checked = -1,
+        order = true, circleId = data.circle_id, getCircleInfo = false)
+        .then((result) => {
+          if (result.response[1] != undefined) {
+            if (result.response[1].title == '늘어나는 요우무') {
+              console.log('baseWork', JSON.stringify(result.response[1], null, 4));
+            }
+          }
+          
+          setWorkDataList(result.response);
+        });
   }
 
   useEffect(() => {
@@ -94,14 +101,14 @@ function ListItem({ data, navigation, budgetCriterion }) {
       </TouchableOpacity>
       <FlatList
           data={ workDataList }
-          renderItem={ ({ item }) => <WorkListItem data={ item } onPressFunc={ baseWork } budgetCriterion={ budgetCriterion } /> }
+          renderItem={ ({ item }) => <WorkListItem data={ item } baseWork={ baseWork } budgetCriterion={ budgetCriterion } navigation={ navigation } /> }
           keyExtractor={ (item) => item.id }
           horizontal />
     </View>
   );
 }
 
-function WorkListItem({ data, onPressFunc, budgetCriterion }) {
+function WorkListItem({ data, baseWork, budgetCriterion, navigation }) {
   const dispatch = useDispatch();
   const imageSrc = data.image_path == DEFAULT_IMAGE ? require('../../public/null-image.png') : { uri: data.image_path };
   const imageStyle = {
@@ -111,14 +118,13 @@ function WorkListItem({ data, onPressFunc, budgetCriterion }) {
     borderColor: data.color,
   };
 
-  const [ isDefaultImageMode, setIsDefaultImageMode ] = useState(data.checked == '0');
+  const [ isDefaultImageMode, setIsDefaultImageMode ] = useState(data.checked == 0);
 
   const currentBudget = useSelector((state) => state.currentBudget);
   const isPriceVisible = useSelector((state) => state.isPriceVisible);
   const isWorkTitleVisible = useSelector((state) => state.isWorkTitleVisible);
 
   const budgetTask = () => {
-    console.log(budgetCriterion);
     if (budgetCriterion.includes(data.priority)) {
       const pmBudget = data.checked == 1 ? data.price : -data.price;
       dispatch(setCurrentBudget(currentBudget + pmBudget));
@@ -126,12 +132,11 @@ function WorkListItem({ data, onPressFunc, budgetCriterion }) {
       dispatch(setCurrentBudget(currentBudget));
     }
   }
-  
   return (
     <TouchableOpacity
         onPress={ () =>  {
           onPressImage(data, isDefaultImageMode, setIsDefaultImageMode);
-          onPressFunc();
+          baseWork();
           budgetTask();
         } }>
       { isDefaultImageMode ?

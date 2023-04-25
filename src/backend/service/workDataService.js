@@ -3,7 +3,7 @@ import { deleteWorkDataByCircleIdAsDAO, deleteWorkDataByIdAsDAO, getPriceSumAsDA
 import { removeEmptyStringFromArray } from "../function/function";
 
 export async function getWorkDataAsService(title, priority, checked, order, circleId, joinCircle) {
-  const sqlTitle = title == '' ? '' : `w.title = ${ title }`;
+  const sqlTitle = title == '' ? '' : `w.title LIKE '%${ title }%'`;
   const sqlChecked = checked == -1
       ? ''
       : checked == 0
@@ -142,6 +142,7 @@ export async function getPriceSumAsService(priority, checked) {
       ? ''
       : ` AND checked = ${ checked }`;
   const whereExpression = `priority IN (${ prioritySql })${checkedSql};`;
+  console.log(whereExpression);
   const result = await getPriceSumAsDAO(whereExpression);
   return result;
 }

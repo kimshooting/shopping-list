@@ -7,7 +7,6 @@ import { getPrioritySetAsDAO } from "../dao/prioritySetDAO";
 export async function calculateCurrentBudget() {
   const criterionArray = await getBudgetCrioterion();
   const result = await getPriceSum(criterionArray);
-  console.log('aa', result);
   return result.response;
 }
 

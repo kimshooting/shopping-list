@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react';
-import { Button, Image, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Button, Image, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { RadioButton } from 'react-native-paper';
 import { DEFAULT_IMAGE } from '../data/constants';
 import { getPrioritySet } from '../backend/function/function';
 import { useDispatch } from 'react-redux';
-import { completeAddingWork } from '../backend/controller/workDataController';
+import { completeAddingWork, onDeleteWorkRequest } from '../backend/controller/workDataController';
+import { setCurrentBudget } from '../data/store';
 
 function AddWorkScreen({ route, navigation }) {
   const circleData = route.params.circleData;
   const isEdit = route.params.isEdit;
   const workData = route.params.workData;
+  console.log(workData);
   const defaultImage = workData.image_path == DEFAULT_IMAGE ? {
     src: require('../../public/null-image.png'),
     isDefault: true
@@ -63,20 +65,40 @@ function AddWorkScreen({ route, navigation }) {
           }
         </View>
       </View>
-      <Button
-          title='완료'
-          onPress={ () => {
-            const data = {
-              id: workData.id,
-              title: title,
-              checked: 0,
-              image: currentImage,
-              priority: checked,
-              price: price,
-              circle_id: circleData.circle_id,
-            }
-            onComplete(data, navigation, isEdit, dispatch);
-          } } />
+      <View>
+        {
+          isEdit
+              ? <Button
+                    color='red'      
+                    title='삭제'
+                    onPress={ () => {
+                      Alert.alert('', '정말 삭제하겠습니까?', [
+                        {
+                          text: 'OK',
+                          onPress: () => deleteWork(workData, navigation, dispatch)
+                        },
+                        {
+                          text: 'Cancel'
+                        }
+                      ]);
+                    } } />
+              : null
+        }
+        <Button
+            title='완료'
+            onPress={ () => {
+              const data = {
+                id: workData.id,
+                title: title,
+                checked: workData.checked,
+                image: currentImage,
+                priority: checked,
+                price: price,
+                circle_id: circleData.circle_id,
+              }
+              onComplete(data, navigation, isEdit, dispatch);
+            } } />
+      </View>
     </SafeAreaView>
   );
 }
@@ -110,9 +132,15 @@ function RadioBtn({ item, checker }) {
   )
 }
 
-async function onComplete(data, navigation, isEdit, dispatch) {
-  await completeAddingWork(data, isEdit, dispatch);
+async function deleteWork(workData, navigation, dispatch) {
+  const currentBudget = await onDeleteWorkRequest(workData);
+  dispatch(setCurrentBudget(currentBudget));
   navigation.goBack();
+}
+
+function onComplete(data, navigation, isEdit, dispatch) {
+  completeAddingWork(data, isEdit, dispatch)
+      .then((result) => navigation.goBack());
 }
 
 const styles = StyleSheet.create({

@@ -71,6 +71,7 @@ function toAddWork(navigation, dataFromPrevious) {
   const workData = {
     title: '',
     price: '',
+    checked: 0,
     priority: dataFromPrevious.priority,
     image_path: DEFAULT_IMAGE,
   }

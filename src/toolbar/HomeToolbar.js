@@ -54,7 +54,6 @@ function HomeToolbar() {
                     isChecked: bc.includes(ps[i].priority)
                   };
                 }
-                console.log('here', data);
                 setPrioritySet(data);
               });
         });
@@ -200,8 +199,6 @@ function onListItemPress(setSelectedOrder, to) {
 async function onOrderButtonPress(to, dispatch) {
   getMetadata(CURRENT_ORDER)
       .then((result) => {
-        console.log(result.responseCode == NO_SUCH_KEY);
-        console.log(result.responseCode);
         if (result.responseCode == NO_SUCH_KEY) {
           insertMetadata(CURRENT_ORDER, to)
               .then((result) => dispatch(setCurrentOrderMode(Math.random())));
@@ -214,7 +211,6 @@ async function onOrderButtonPress(to, dispatch) {
 
 function onSearchButtonPress(searchMode, searchText, dispatch) {
   let sql = 'WHERE ';
-  console.log('start', sql);
   switch (searchMode.key) {
     case MODES.by_circle.key:
       sql += 'p.circle_name LIKE ';
@@ -231,10 +227,8 @@ function onSearchButtonPress(searchMode, searchText, dispatch) {
   } else {
     sql += `'%${ searchText }%'`;
   }
-  console.log(sql);
   getMetadata(SEARCH_KEYWORD)
       .then((result) => {
-        console.log('search keyword:', result);
         if (result.responseCode == NO_SUCH_KEY) {
           insertMetadata(SEARCH_KEYWORD, sql)
               .then((result) => dispatch(setCurrentOrderMode(Math.random())));

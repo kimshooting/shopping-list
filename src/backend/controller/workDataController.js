@@ -1,6 +1,6 @@
 import { moveAsync } from "expo-file-system";
 import { deleteWorkDataByCircleIdAsService, deleteWorkDataByIdAsService, getPriceSumAsService, getWorkDataAsService, getWorkDataWithPriorityAsService, insertWorkDataAsService, truncateWorkDataAsService, updateWorkDataAsService } from "../service/workDataService";
-import { calculateCurrentBudget, onCompleteAddingWorkFileTask } from "../function/function";
+import { calculateCurrentBudget, getBudgetCrioterion, onCompleteAddingWorkFileTask } from "../function/function";
 import { setCurrentBudget } from "../../data/store";
 
 export async function getWorkData(title = '', priority = [ 1, 2, 3, 4, 5 ],
@@ -61,7 +61,6 @@ export async function getPriceSum(priority = [ 1, 2, 3, 4, 5 ], checked = 0) {
 }
 
 export async function completeAddingWork(data, isEdit, dispatch) {
-  console.log(data);
   await onCompleteAddingWorkFileTask(data);
 
   if (isEdit) {
@@ -104,4 +103,10 @@ export async function completeAddingWork(data, isEdit, dispatch) {
     await insertWorkDataAsService(updateData);
   }
   calculateCurrentBudget().then((result) => dispatch(setCurrentBudget(result)));
+}
+
+export async function onDeleteWorkRequest(workData) {
+  await deleteWorkDataById(workData.id);
+  const currentBudget = await calculateCurrentBudget();
+  return currentBudget;
 }
