@@ -32,13 +32,15 @@ function CircleSelectScreen({ navigation }) {
             onPress={ () => searchCircle(searchText, selectedFile.id)
                 .then((result) => setList(result.response)) } />
       </View>
+      <FlatList
+          // style={ styles.circleList }
+          data={ list }
+          renderItem={ ({ item }) => <Item data={ item } onPress={ () => onItemPress(list, setList, item, selectedFile, setSelectedFile) } /> }
+          contentContainerStyle={ { flexGrow: 0, } }  />
       <Button
           title='선택완료'
           onPress={ () => onSelectComplete(dispatch, navigation, selectedFile) }
           disabled={ selectedFile.id == -1 } />
-      <FlatList
-          data={ list }
-          renderItem={ ({ item }) => <Item data={ item } onPress={ () => onItemPress(list, setList, item, selectedFile, setSelectedFile) } /> } />
     </SafeAreaView>
   )
 }
@@ -97,9 +99,6 @@ const styles = StyleSheet.create({
     borderColor: '#000',
     flex: 3,
   },
-  searchButton: {
-    flex: 1,
-  },
   item: {
     borderColor: '#000',
     borderWidth: 1,
@@ -117,6 +116,11 @@ const styles = StyleSheet.create({
   },
   space: {
     color: '#000',
+  },
+  circleList: {
+    flex: 1,
+  },
+  searchButton: {
   },
 });
 
