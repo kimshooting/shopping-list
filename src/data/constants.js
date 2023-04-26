@@ -59,4 +59,6 @@ export const MAIN_GRAY_COLOR = '#495057';
 export const SUB_GRAY_COLOR = '#868e96';
 export const MAIN_BLUE_COLOR = '#1971c2';
 export const SUB_BLUE_COLOR = '#74c0fc';
+export const CYAN_COLOR = '#1098ad';
+export const GRAPE_COLOR = '#9c36b5';
 export const PRIORITY_COLOR_SQUARE_WIDTH_AND_SIZE = 20;
