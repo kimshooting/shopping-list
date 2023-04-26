@@ -37,7 +37,7 @@ function AddWorkScreen({ route, navigation }) {
 
   return (
     <SafeAreaView style={ styles.container }>
-      <ScrollView>
+      <ScrollView style={ { flex: 1, } }>
         <View style={ styles.workImageSelectBtnContainer }>
           <TouchableOpacity
               style={ styles.workImageSelectBtn }
