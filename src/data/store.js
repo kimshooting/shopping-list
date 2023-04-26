@@ -1,5 +1,4 @@
 import { configureStore, createSlice } from "@reduxjs/toolkit";
-import { create } from "react-test-renderer";
 
 const selectedCircle = createSlice({
   name: 'selectedCircle',
@@ -61,6 +60,32 @@ const isWorkTitleVisible = createSlice({
   }
 });
 
+const pickedCircle = createSlice({
+  name: 'pickedCircle',
+  initialState: {
+    id: -1,
+    space: '',
+    penname: '',
+    circle_name: '',
+  },
+  reducers: {
+    setPickedCircle(state, action) {
+      return action.payload;
+    }
+  }
+});
+
+const currentPage = createSlice({
+  name: 'currentPage',
+  initialState: 0,
+  reducers: 0,
+  reducers: {
+    setCurrentPage(state, action) {
+      return action.payload;
+    }
+  }
+});
+
 export default configureStore({
   reducer: {
     selectedCircle: selectedCircle.reducer,
@@ -69,6 +94,8 @@ export default configureStore({
     budgetCriterion: budgetCriterion.reducer,
     isPriceVisible: isPriceVisible.reducer,
     isWorkTitleVisible: isWorkTitleVisible.reducer,
+    pickedCircle: pickedCircle.reducer,
+    currentPage: currentPage.reducer,
   }
 });
 
@@ -78,3 +105,5 @@ export const { setCurrentBudget } = currentBudget.actions;
 export const { setBudgetCriterion } = budgetCriterion.actions;
 export const { setIsPriceVisible } = isPriceVisible.actions;
 export const { setIsWorkTitleVisible } = isWorkTitleVisible.actions;
+export const { setPickedCircle } = pickedCircle.actions;
+export const { setCurrentPage } = currentPage.actions;
