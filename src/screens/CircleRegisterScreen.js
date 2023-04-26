@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { RadioButton } from 'react-native-paper';
 import { getPrioritySet } from '../backend/function/function';
 import { registerCircle } from '../backend/controller/registeredCircleController';
-import { MAIN_BLUE_COLOR, MAIN_GRAY_COLOR, SUB_BLUE_COLOR, SUB_GRAY_COLOR } from '../data/constants';
+import { MAIN_BLUE_COLOR, MAIN_GRAY_COLOR, PRIORITY_COLOR_SQUARE_WIDTH_AND_SIZE, SUB_BLUE_COLOR, SUB_GRAY_COLOR } from '../data/constants';
 
 function CircleRegisterScreen({ navigation }) {
   const selectedCircle = useSelector((state) => state.selectedCircle);
@@ -92,8 +92,8 @@ function onRegister(selectedCircle, circleImage, checkedPriority, navigation) {
 function RadioBtn({ item, checker }) {
   const [ checked, setChecked ] = checker;
   const styleObj = {
-    width: 20,
-    height: 20,
+    width: PRIORITY_COLOR_SQUARE_WIDTH_AND_SIZE,
+    height: PRIORITY_COLOR_SQUARE_WIDTH_AND_SIZE,
     backgroundColor: item.color,
   }
   return (

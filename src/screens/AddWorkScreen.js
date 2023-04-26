@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Alert, Button, Image, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Button, Image, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { RadioButton } from 'react-native-paper';
-import { DEFAULT_IMAGE } from '../data/constants';
+import { DEFAULT_IMAGE, MAIN_BLUE_COLOR, MAIN_GRAY_COLOR, MAIN_RED_COLOR, PRIORITY_COLOR_SQUARE_WIDTH_AND_SIZE, SUB_GRAY_COLOR } from '../data/constants';
 import { getPrioritySet } from '../backend/function/function';
 import { useDispatch } from 'react-redux';
 import { completeAddingWork, onDeleteWorkRequest } from '../backend/controller/workDataController';
@@ -37,24 +37,30 @@ function AddWorkScreen({ route, navigation }) {
 
   return (
     <SafeAreaView style={ styles.container }>
-      <View>
-        <TouchableOpacity
-            onPress={ () => selectImage(setCurrentImage) }>
-          <Image
-              style={ styles.image }
-              source={ currentImage.isDefault ? currentImage.src : { uri: currentImage.src } }
-              resizeMode='contain' />
-        </TouchableOpacity>
-        <TextInput style={ styles.textInput } placeholder='타이틀'
-            placeholderTextColor='#868e96'
-            onChangeText={ (e) => setTitle(e) }
-            value={ title } />
-        <TextInput style={ styles.textInput }
-            placeholder='가격' placeholderTextColor='#868e96'
-            inputMode='numeric'
-            onChangeText={ (n) => setPrice(n) }
-            value={ price } />
-        <Text style={ styles.text }>우선순위</Text>
+      <ScrollView>
+        <View style={ styles.workImageSelectBtnContainer }>
+          <TouchableOpacity
+              style={ styles.workImageSelectBtn }
+              onPress={ () => selectImage(setCurrentImage) }>
+            <Image
+                style={ styles.workImage }
+                source={ currentImage.isDefault ? currentImage.src : { uri: currentImage.src } }
+                resizeMode='contain' />
+          </TouchableOpacity>
+          <Text style={ styles.workImageSelectBtnTitle }>작품/굿즈 이미지</Text>
+        </View>
+        <View style={ styles.textInputContainer }>
+          <TextInput style={ styles.textInput } placeholder='타이틀'
+              placeholderTextColor='#868e96'
+              onChangeText={ (e) => setTitle(e) }
+              value={ title } />
+          <TextInput style={ styles.textInput }
+              placeholder='가격' placeholderTextColor='#868e96'
+              inputMode='numeric'
+              onChangeText={ (n) => setPrice(n) }
+              value={ price } />
+        </View>
+        <Text style={ styles.title }>우선순위</Text>
         <View style={ styles.radioContainer }>
           {
             prioritySet.map((item) => {
@@ -64,28 +70,29 @@ function AddWorkScreen({ route, navigation }) {
             })
           }
         </View>
-      </View>
-      <View>
+      </ScrollView>
+      <View style={ styles.btnContainer }>
         {
           isEdit
-              ? <Button
-                    color='red'      
-                    title='삭제'
-                    onPress={ () => {
-                      Alert.alert('', '정말 삭제하겠습니까?', [
-                        {
-                          text: 'OK',
-                          onPress: () => deleteWork(workData, navigation, dispatch)
-                        },
-                        {
-                          text: 'Cancel'
-                        }
-                      ]);
-                    } } />
+              ? <TouchableOpacity
+                      style={ styles.deleteBtn }
+                      onPress={ () => {
+                        Alert.alert('', '정말 삭제하겠습니까?', [
+                          {
+                            text: 'OK',
+                            onPress: () => deleteWork(workData, navigation, dispatch)
+                          },
+                          {
+                            text: 'Cancel'
+                          }
+                        ]);
+                      } }>
+                  <Text style={ styles.btnTitle }>삭제</Text>
+                </TouchableOpacity>
               : null
         }
-        <Button
-            title='완료'
+        <TouchableOpacity
+            style={ styles.completeBtn }
             onPress={ () => {
               const data = {
                 id: workData.id,
@@ -97,7 +104,9 @@ function AddWorkScreen({ route, navigation }) {
                 circle_id: circleData.circle_id,
               }
               onComplete(data, navigation, isEdit, dispatch);
-            } } />
+            } }>
+          <Text style={ styles.btnTitle }>완료</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -116,8 +125,8 @@ async function selectImage(setCurrentImage) {
 function RadioBtn({ item, checker }) {
   const [ checked, setChecked ] = checker;
   const styleObj = {
-    width: 25,
-    height: 25,
+    width: PRIORITY_COLOR_SQUARE_WIDTH_AND_SIZE,
+    height: PRIORITY_COLOR_SQUARE_WIDTH_AND_SIZE,
     backgroundColor: item.color,
   }
   return (
@@ -127,7 +136,7 @@ function RadioBtn({ item, checker }) {
             status={ checked == item.priority ? 'checked' : 'unchecked' }
             onPress={ () => setChecked(item.priority) } />
       <View style={ styleObj } />
-      <Text style={ styles.text }>{ item.title }</Text>
+      <Text style={ styles.radioBtnLabel }>{ item.title }</Text>
     </View>
   )
 }
@@ -149,27 +158,81 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'space-between',
   },
-  image: {
+  workImageSelectBtnContainer: {
+    margin: 10,
+    padding: 10,
+    alignSelf: 'flex-start',
+    alignItems: 'center',
+  },
+  workImageSelectBtn: {
+    padding: 10,
+    borderColor: `${ MAIN_GRAY_COLOR }`,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  workImageSelectBtnTitle: {
+    color: `${ SUB_GRAY_COLOR }`,
+  },
+  workImage: {
     width: 100,
     height: 100,
   },
-  text: {
-    color: '#000',
-  },
-  label: {
-    color: '#000',
+  textInputContainer: {
+    padding: 20,
+    marginRight: 50,
+    gap: 10,
   },
   textInput: {
     borderWidth: 1,
-    borderColor: '#000',
-    color: '#000',
+    borderColor: `${ SUB_GRAY_COLOR }`,
+    color: `${ SUB_GRAY_COLOR }`,
+    padding: 13,
+    borderRadius: 5,
+  },
+  title: {
+    color: `${ MAIN_GRAY_COLOR }`,
+    fontSize: 20,
+    marginLeft: 10,
+    marginTop: 15,
   },
   radioConatiner: {
-    flexDirection: 'column',
+    marginTop: 10,
+  },
+  radioBtnLabel: {
+    color: `${ SUB_GRAY_COLOR }`,
+    marginLeft: 10,
   },
   radioItem: {
     flexDirection: 'row',
     alignItems: 'center'
+  },
+  btnContainer: {
+    marginHorizontal: 20,
+    marginBottom: 15,
+    flexDirection: 'row',
+    gap: 30,
+  },
+  completeBtn: {
+    backgroundColor: `${ MAIN_BLUE_COLOR }`,
+    padding: 10,
+    borderRadius: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+  },
+  btnTitle: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 20,
+  },
+  deleteBtn: {
+    backgroundColor: `${ MAIN_RED_COLOR }`,
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 10,
+    borderRadius: 100,
   },
 });
 
