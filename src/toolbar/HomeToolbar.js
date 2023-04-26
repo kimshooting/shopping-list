@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Alert, Button, Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { TextInput } from 'react-native-paper';
-import { BUDGET_CRITERION, CURRENT_ORDER, CYAN_COLOR, MAIN_BLUE_COLOR, MAIN_GRAY_COLOR, NO_SUCH_KEY, ORDER_BY_CIRCLE_NAME, ORDER_BY_PENNAME, ORDER_BY_PRIORITY, ORDER_BY_SPACE, SEARCH_KEYWORD, SUB_BLUE_COLOR, SUB_GRAY_COLOR } from '../data/constants';
-import { setCurrentBudget, setCurrentOrderMode } from '../data/store';
+import { BUDGET_CRITERION, CURRENT_ORDER, MAIN_BLUE_COLOR, MAIN_GRAY_COLOR, NO_SUCH_KEY, ORDER_BY_CIRCLE_NAME, ORDER_BY_PENNAME, ORDER_BY_PRIORITY, ORDER_BY_SPACE, SEARCH_KEYWORD, SUB_BLUE_COLOR, SUB_GRAY_COLOR } from '../data/constants';
+import { setBudgetCriterion, setCurrentBudget, setCurrentOrderMode } from '../data/store';
 import { useDispatch, useSelector } from 'react-redux';
 import { calculateCurrentBudget, getBudgetCrioterion, getPrioritySet } from '../backend/function/function';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
@@ -33,6 +33,7 @@ function HomeToolbar() {
   const [ selectedOrder, setSelectedOrder ] = useState(-1);
   const [ searchMode, setSearchMode ] = useState(MODES.by_circle);
   const currentBudget = useSelector((state) => state.currentBudget);
+  const budgetCriterion = useSelector((state) => state.budgetCriterion);
   const [ prioritySet, setPrioritySet ] = useState({ });
 
   useEffect(() => {
@@ -43,19 +44,16 @@ function HomeToolbar() {
           dispatch(setCurrentBudget(0));
         });
     getPrioritySet()
-        .then((ps) => {
-          getBudgetCrioterion()
-              .then((bc) => {
-                data = { };
-                for (let i = 0; i < ps.length; i++) {
-                  data[ps[i].priority] = {
-                    title: ps[i].title,
-                    color: ps[i].color,
-                    isChecked: bc.includes(ps[i].priority)
-                  };
-                }
-                setPrioritySet(data);
-              });
+        .then((prioritySet) => {
+          data = { };
+          for (p of prioritySet) {
+            data[p.priority] = {
+              title: p.title,
+              color: p.color,
+              isChecked: budgetCriterion.includes(p.priority)
+            };
+          }
+          setPrioritySet(data);
         });
   }, [ ]);
   return (
@@ -246,15 +244,20 @@ function onSearchButtonPress(searchMode, searchText, dispatch) {
       });
 }
 
-function applyBudgetCriterion(prioritySet, dispatch) {
+async function applyBudgetCriterion(prioritySet, dispatch) {
   const val1 = prioritySet[1].isChecked ? '1' : '';
   const val2 = prioritySet[2].isChecked ? '2' : '';
   const val3 = prioritySet[3].isChecked ? '3' : '';
   const val4 = prioritySet[4].isChecked ? '4' : '';
   const val5 = prioritySet[5].isChecked ? '5' : '';
   const value = `${ val1 },${ val2 },${ val3 },${ val4 },${ val5 }`;
-  updateMetadata(BUDGET_CRITERION, value)
-      .then((result) => calculateCurrentBudget().then((result) => dispatch(setCurrentBudget(result))));
+  await updateMetadata(BUDGET_CRITERION, value);
+  const currentBudget = await calculateCurrentBudget();
+  dispatch(setCurrentBudget(currentBudget));
+  const budgetCriterion = await getBudgetCrioterion();
+  dispatch(setBudgetCriterion(budgetCriterion));
+  // updateMetadata(BUDGET_CRITERION, value)
+  //     .then((result) => calculateCurrentBudget().then((result) => dispatch(setCurrentBudget(result))));
 }
 
 const styles = StyleSheet.create({

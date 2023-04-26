@@ -13,7 +13,6 @@ export async function calculateCurrentBudget() {
 export async function getBudgetCrioterion() {
   const queryResult = await getMetadata(BUDGET_CRITERION, '1,2,3,4,5', true);
   const value = queryResult.response;
-  console.log(value);
   const criterionArray = value.split(/,+/);
   removeEmptyStringFromArray(criterionArray);
   for (let i = 0; i < criterionArray.length; i++) {

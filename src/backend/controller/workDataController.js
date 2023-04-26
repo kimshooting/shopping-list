@@ -1,6 +1,5 @@
-import { moveAsync } from "expo-file-system";
 import { deleteWorkDataByCircleIdAsService, deleteWorkDataByIdAsService, getPriceSumAsService, getWorkDataAsService, getWorkDataWithPriorityAsService, insertWorkDataAsService, truncateWorkDataAsService, updateWorkDataAsService } from "../service/workDataService";
-import { calculateCurrentBudget, getBudgetCrioterion, onCompleteAddingWorkFileTask } from "../function/function";
+import { calculateCurrentBudget, onCompleteAddingWorkFileTask } from "../function/function";
 import { setCurrentBudget } from "../../data/store";
 
 export async function getWorkData(title = '', priority = [ 1, 2, 3, 4, 5 ],

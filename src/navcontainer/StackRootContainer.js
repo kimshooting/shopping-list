@@ -13,7 +13,8 @@ import { useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
 import { db } from "../backend/db";
 import { IS_PRICE_VISIBLE, IS_WORK_TITLE_VISIBLE, METADATA_TABLE } from "../data/constants";
-import { setIsPriceVisible, setIsWorkTitleVisible } from "../data/store";
+import { setBudgetCriterion, setIsPriceVisible, setIsWorkTitleVisible } from "../data/store";
+import { getBudgetCrioterion } from "../backend/function/function";
 
 const Stack = createNativeStackNavigator();
 
@@ -55,6 +56,7 @@ function StackRootContainer() {
 async function initRedux(dispatch) {
   await aboutIsPriceVisible(dispatch);
   await aboutIsWorkTitleVisible(dispatch);
+  await aboutBudgetCriterion(dispatch);
 }
 
 function aboutIsPriceVisible(dispatch) {
@@ -88,6 +90,11 @@ function aboutIsWorkTitleVisible(dispatch) {
       }, (err) => reject(err));
     });
   });
+}
+
+async function aboutBudgetCriterion(dispatch) {
+  const budgetCriterion = await getBudgetCrioterion();
+  dispatch(setBudgetCriterion(budgetCriterion));
 }
 
 export default StackRootContainer;

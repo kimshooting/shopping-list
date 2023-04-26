@@ -5,8 +5,7 @@ import HomeToolbar from "../toolbar/HomeToolbar";
 import { useDispatch, useSelector } from "react-redux";
 import { setCurrentBudget } from "../data/store";
 import { getRegisteredCircleData } from "../backend/controller/registeredCircleController";
-import { getBudgetCrioterion } from "../backend/function/function";
-import { getWorkData, getWorkDataWithPriority, updateWorkData } from "../backend/controller/workDataController";
+import { getWorkDataWithPriority, updateWorkData } from "../backend/controller/workDataController";
 
 function HomeScreen({ navigation }) {
   const [ registeredCircleList, setRegisteredCircleList ] = useState([ ]);
@@ -32,26 +31,18 @@ function HomeScreen({ navigation }) {
     return focusHandler;
   }, [ navigation ]);
 
-  const currentBudget = useSelector((state) => state.currentBudget);
-  useEffect(() => {
-    getBudgetCrioterion()
-        .then((result) => {
-          setBudgetCriterion(result);
-        });
-  }, [ currentBudget ]);
-
   return (
     <SafeAreaView style={ styles.container }>
       <HomeToolbar />
       <FlatList
           data={ registeredCircleList }
-          renderItem={ ({ item }) => <ListItem data={ item } navigation={ navigation } budgetCriterion={ budgetCriterion } /> }
+          renderItem={ ({ item }) => <ListItem data={ item } navigation={ navigation } /> }
           keyExtractor={ (item) => item.space } />
     </SafeAreaView>
   );
 }
 
-function ListItem({ data, navigation, budgetCriterion }) {
+function ListItem({ data, navigation }) {
   const defaultImage = data.circle_image_path == DEFAULT_IMAGE;
   const priorityColorBox = {
     width: PRIORITY_COLOR_SQUARE_WIDTH_AND_SIZE,
@@ -95,7 +86,7 @@ function ListItem({ data, navigation, budgetCriterion }) {
       </TouchableOpacity>
       <FlatList
           data={ workDataList }
-          renderItem={ ({ item }) => <WorkListItem data={ item } baseWork={ baseWork } budgetCriterion={ budgetCriterion } navigation={ navigation } /> }
+          renderItem={ ({ item }) => <WorkListItem data={ item } baseWork={ baseWork } navigation={ navigation } /> }
           keyExtractor={ (item) => item.id }
           contentContainerStyle={ styles.workListContainer }
           horizontal />
@@ -103,7 +94,7 @@ function ListItem({ data, navigation, budgetCriterion }) {
   );
 }
 
-function WorkListItem({ data, baseWork, budgetCriterion, navigation }) {
+function WorkListItem({ data, baseWork, navigation }) {
   const dispatch = useDispatch();
   const imageSrc = data.image_path == DEFAULT_IMAGE ? require('../../public/null-image.png') : { uri: data.image_path };
   const imageStyle = {
@@ -118,6 +109,8 @@ function WorkListItem({ data, baseWork, budgetCriterion, navigation }) {
   const currentBudget = useSelector((state) => state.currentBudget);
   const isPriceVisible = useSelector((state) => state.isPriceVisible);
   const isWorkTitleVisible = useSelector((state) => state.isWorkTitleVisible);
+
+  const budgetCriterion = useSelector((state) => state.budgetCriterion);
 
   const budgetTask = () => {
     if (budgetCriterion.includes(data.priority)) {
