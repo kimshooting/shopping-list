@@ -1,5 +1,5 @@
 import { FlatList, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { DEFAULT_IMAGE } from "../data/constants";
+import { DEFAULT_IMAGE, MAIN_BLUE_COLOR, MAIN_GRAY_COLOR, PRIORITY_COLOR_SQUARE_WIDTH_AND_SIZE, SUB_GRAY_COLOR } from "../data/constants";
 import { useEffect, useState } from "react";
 import HomeToolbar from "../toolbar/HomeToolbar";
 import { useDispatch, useSelector } from "react-redux";
@@ -54,8 +54,8 @@ function HomeScreen({ navigation }) {
 function ListItem({ data, navigation, budgetCriterion }) {
   const defaultImage = data.circle_image_path == DEFAULT_IMAGE;
   const priorityColorBox = {
-    width: 25,
-    height: 25,
+    width: PRIORITY_COLOR_SQUARE_WIDTH_AND_SIZE,
+    height: PRIORITY_COLOR_SQUARE_WIDTH_AND_SIZE,
     backgroundColor: data.color,
   }
 
@@ -88,15 +88,16 @@ function ListItem({ data, navigation, budgetCriterion }) {
             resizeMode='contain' />
         <View>
           <View style={ priorityColorBox } />
-          <Text style={ styles.text }>{ data.space }</Text>
-          <Text style={ styles.text }>{ data.circle_name }</Text>
-          <Text style={ styles.text }>{ data.penname }</Text>
+          <Text style={ styles.circleSpaceText }>{ data.space }</Text>
+          <Text style={ styles.circleNameText }>{ data.circle_name }</Text>
+          <Text style={ styles.pennameText }>{ data.penname }</Text>
         </View>
       </TouchableOpacity>
       <FlatList
           data={ workDataList }
           renderItem={ ({ item }) => <WorkListItem data={ item } baseWork={ baseWork } budgetCriterion={ budgetCriterion } navigation={ navigation } /> }
           keyExtractor={ (item) => item.id }
+          contentContainerStyle={ styles.workListContainer }
           horizontal />
     </View>
   );
@@ -128,6 +129,7 @@ function WorkListItem({ data, baseWork, budgetCriterion, navigation }) {
   }
   return (
     <TouchableOpacity
+        style={ styles.workItem }
         onPress={ () =>  {
           onPressImage(data, isDefaultImageMode, setIsDefaultImageMode);
           baseWork();
@@ -178,26 +180,44 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  circleImage: {
-    width: 100,
-    height: 100,
-  },
+
   text: {
     color: '#000',
   },
+
   itemContainer: {
     flex: 1,
-    borderWidth: 1,
+    borderTopWidth: 1,
     borderColor: '#000',
+    padding: 10,
   },
   circleBrief: {
     flex: 1,
     flexDirection: 'row',
     alignContent: 'center',
+    gap: 10,
+    marginBottom: 10,
+  },
+  circleImage: {
+    width: 100,
+    height: 100,
+  },
+  circleSpaceText: {
+    color: `${ MAIN_BLUE_COLOR }`,
+    fontSize: 16,
+  },
+  circleNameText: {
+    color: `${ MAIN_GRAY_COLOR }`,
+    fontSize: 16,
+  },
+  pennameText: {
+    color: `${ SUB_GRAY_COLOR }`,
+    fontSize: 16,
   },
   workListContainer: {
-    flex: 1,
-    flexDirection: 'row',
+    gap: 20,
+  },
+  workItem: {
     alignItems: 'center',
   },
   checkedImageContainer: {
