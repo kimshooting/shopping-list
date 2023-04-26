@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Alert, Button, Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { TextInput } from 'react-native-paper';
-import { BUDGET_CRITERION, CURRENT_ORDER, NO_SUCH_KEY, ORDER_BY_CIRCLE_NAME, ORDER_BY_PENNAME, ORDER_BY_PRIORITY, ORDER_BY_SPACE, SEARCH_KEYWORD } from '../data/constants';
+import { BUDGET_CRITERION, CURRENT_ORDER, CYAN_COLOR, MAIN_BLUE_COLOR, MAIN_GRAY_COLOR, NO_SUCH_KEY, ORDER_BY_CIRCLE_NAME, ORDER_BY_PENNAME, ORDER_BY_PRIORITY, ORDER_BY_SPACE, SEARCH_KEYWORD, SUB_BLUE_COLOR, SUB_GRAY_COLOR } from '../data/constants';
 import { setCurrentBudget, setCurrentOrderMode } from '../data/store';
 import { useDispatch, useSelector } from 'react-redux';
 import { calculateCurrentBudget, getBudgetCrioterion, getPrioritySet } from '../backend/function/function';
@@ -177,17 +177,24 @@ function HomeToolbar() {
           </View>
         </View>
       </Modal>
-      <Button
-          title='검색'
-          onPress={ () => setSearchModalVisible(true) } />
-      <Button
-          title='정렬 기준'
-          onPress={ () => setOrderModalVisible(true) }  />
-      <TouchableOpacity
-          onPress={ () => setBudgetCriterionVisible(true) }>
-        <Text style={ [ styles.modalText, { marginBottom: 0, } ] }>예산</Text>
-        <Text style={ styles.modalText }>{ currentBudget }</Text>
-      </TouchableOpacity>
+      <View style={ styles.barContainer }>
+        <TouchableOpacity
+            style={ styles.openBtn }
+            onPress={ () => setSearchModalVisible(true) }>
+          <Text style={ styles.openBtnTitle }>검색</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+            style={ styles.openBtn }
+            onPress={ () => setOrderModalVisible(true) }>
+          <Text style={ styles.openBtnTitle }>정렬 기준</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+            style={ styles.budgetContainer }
+            onPress={ () => setBudgetCriterionVisible(true) }>
+          <Text style={ [ styles.budgetLable ] }>예산</Text>
+          <Text style={ styles.budgetText }>{ currentBudget }</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -289,7 +296,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F194FF',
   },
   buttonClose: {
-    backgroundColor: '#2196F3',
+    backgroundColor: `${ MAIN_BLUE_COLOR }`,
   },
   textStyle: {
     color: 'white',
@@ -302,7 +309,7 @@ const styles = StyleSheet.create({
   modalText: {
     textAlign: 'center',
     marginBottom: 12,
-    color: '#000',
+    color: `${ MAIN_GRAY_COLOR }`,
   },
   checkboxContainer: {
     flexDirection: 'row',
@@ -313,6 +320,43 @@ const styles = StyleSheet.create({
   },
   label: {
     margin: 8,
+  },
+  barContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    marginLeft: 15,
+    gap: 30,
+  },
+  openBtn: {
+    backgroundColor: `${ SUB_BLUE_COLOR }`,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  openBtnTitle: {
+    color: '#fff',
+    fontSize: 18,
+  },
+  budgetContainer: {
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: `${ SUB_GRAY_COLOR }`,
+    paddingVertical: 3,
+    paddingHorizontal: 10,
+  },
+  budgetLable: {
+    color: `${ SUB_GRAY_COLOR }`,
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  budgetText: {
+    color: `${ MAIN_GRAY_COLOR }`,
+    fontSize: 16,
+    textAlign: 'center',
   },
 });
 
