@@ -7,9 +7,7 @@ import { fetchSharedData } from '../backend/function/fetchSharedData';
 function LoadingForFetchingSharedDataScreen({ route, navigation }) {
   const dir = route.params.dir;
   const dispatch = useDispatch();
-  
-  // readDirectoryAsync(documentDirectory + 'shared_data_dir/image').then((result) => console.log(result));
-  // procedure(dir, navigation, useDispatch());
+
   fetchSharedData(dir)
       .then((result) => {
         calculateCurrentBudget().then((result) => {
