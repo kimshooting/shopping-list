@@ -39,13 +39,13 @@ function CircleRegisterScreen({ navigation }) {
             </TouchableOpacity>
           </View>
           <View style={ styles.imageSelectContainer }>
-            <Text style={ styles.label }>서클 이미지</Text>
             <TouchableOpacity onPress={ () => selectImage(setCircleImage) }>
               <Image
                   style={ styles.circleImage }
                   source={ circleImage.isDefault ? circleImage.src : { uri: circleImage.src } }
                   resizeMode='contain' />
             </TouchableOpacity>
+            <Text style={ styles.label }>서클 이미지</Text>
           </View>
         </View>
         <View style={ styles.radioConatiner }>
@@ -117,6 +117,7 @@ const styles = StyleSheet.create({
   },
   circleInfoContainer: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
     margin: 20,
     padding: 10,
@@ -139,7 +140,9 @@ const styles = StyleSheet.create({
   },
   text: {
     color: `${ MAIN_GRAY_COLOR }`,
-    fontSize: 18,
+    fontSize: 20,
+    marginLeft: 13,
+    marginBottom: 10,
   },
   label: {
     color: `${ SUB_GRAY_COLOR }`,
@@ -177,6 +180,7 @@ const styles = StyleSheet.create({
   },
   imageSelectContainer: {
     marginRight: 30,
+    alignItems: 'center',
   },
   registerButton: {
     backgroundColor: `${ MAIN_BLUE_COLOR }`,
