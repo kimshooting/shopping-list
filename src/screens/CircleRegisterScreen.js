@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Button, Image, SafeAreaView, StyleSheet, Text, ToastAndroid, View } from 'react-native';
+import { Button, Image, SafeAreaView, ScrollView, StyleSheet, Text, ToastAndroid, TouchableOpacity, View } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useSelector } from 'react-redux';
 import { RadioButton } from 'react-native-paper';
 import { getPrioritySet } from '../backend/function/function';
 import { registerCircle } from '../backend/controller/registeredCircleController';
+import { MAIN_BLUE_COLOR, MAIN_GRAY_COLOR, SUB_BLUE_COLOR, SUB_GRAY_COLOR } from '../data/constants';
 
 function CircleRegisterScreen({ navigation }) {
   const selectedCircle = useSelector((state) => state.selectedCircle);
@@ -22,17 +23,33 @@ function CircleRegisterScreen({ navigation }) {
 
   return (
     <SafeAreaView style={ styles.container }>
-      <View>
-        <Button
-            title='서클 선택'
-            onPress={ () => navigation.navigate('CircleSelect') } />
-        <Text style={ styles.label }>서클 위치</Text>
-        <Text style={ styles.text }>{ Object.keys(selectedCircle).length == 0 ? '없음' : selectedCircle.space }</Text>
-        <Text style={ styles.label }>펜네임</Text>
-        <Text style={ styles.text }>{ Object.keys(selectedCircle).length == 0 ? '없음' : selectedCircle.penname }</Text>
-        <Text style={ styles.label }>서클명</Text>
-        <Text style={ styles.text }>{ Object.keys(selectedCircle).length == 0 ? '없음' : selectedCircle.circle_name }</Text>
+      <ScrollView style={ { flex: 1, } }>
+        <View style={ styles.circleInfoContainer }>
+          <View>
+            <Text style={ styles.label }>서클 위치</Text>
+            <Text style={ styles.text }>{ Object.keys(selectedCircle).length == 0 ? '없음' : selectedCircle.space }</Text>
+            <Text style={ styles.label }>펜네임</Text>
+            <Text style={ styles.text }>{ Object.keys(selectedCircle).length == 0 ? '없음' : selectedCircle.penname }</Text>
+            <Text style={ styles.label }>서클명</Text>
+            <Text style={ styles.text }>{ Object.keys(selectedCircle).length == 0 ? '없음' : selectedCircle.circle_name }</Text>
+            <TouchableOpacity
+                style={ styles.circleSelectBtn }
+                onPress={ () => navigation.navigate('CircleSelect') }>
+              <Text style={ styles.circleSelectBtnTitle }>서클 선택</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={ styles.imageSelectContainer }>
+            <Text style={ styles.label }>서클 이미지</Text>
+            <TouchableOpacity onPress={ () => selectImage(setCircleImage) }>
+              <Image
+                  style={ styles.circleImage }
+                  source={ circleImage.isDefault ? circleImage.src : { uri: circleImage.src } }
+                  resizeMode='contain' />
+            </TouchableOpacity>
+          </View>
+        </View>
         <View style={ styles.radioConatiner }>
+          <Text style={ styles.title }>서클 우선순위 선택</Text>
           {
             prioritySet.map((item) => {
               return (
@@ -41,18 +58,12 @@ function CircleRegisterScreen({ navigation }) {
             })
           }
         </View>
-        <Button
-            title='서클 이미지 선택'
-            onPress={ () => selectImage(setCircleImage) } />
-        <Image
-            style={ styles.circleImage }
-            source={ circleImage.isDefault ? circleImage.src : { uri: circleImage.src } }
-            resizeMode='contain' />
-      </View>
-      <Button
+      </ScrollView>
+      <TouchableOpacity
           style={ styles.registerButton }
-          title='등록'
-          onPress={ () => onRegister(selectedCircle, circleImage, checked, navigation) } />
+          onPress={ () => onRegister(selectedCircle, circleImage, checked, navigation) }>
+        <Text style={ styles.registerButtonTitle }>등록</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -81,8 +92,8 @@ function onRegister(selectedCircle, circleImage, checkedPriority, navigation) {
 function RadioBtn({ item, checker }) {
   const [ checked, setChecked ] = checker;
   const styleObj = {
-    width: 25,
-    height: 25,
+    width: 20,
+    height: 20,
     backgroundColor: item.color,
   }
   return (
@@ -91,8 +102,10 @@ function RadioBtn({ item, checker }) {
             value={ item.title }
             status={ checked == item.priority ? 'checked' : 'unchecked' }
             onPress={ () => setChecked(item.priority) } />
-      <View style={ styleObj } />
-      <Text style={ styles.text }>{ item.title }</Text>
+      <View style={ styles.radioValue }>
+        <View style={ styleObj } />
+        <Text style={ styles.radioButtonLabel }>{ item.title }</Text>
+      </View>
     </View>
   )
 }
@@ -100,30 +113,84 @@ function RadioBtn({ item, checker }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    gap: 100
+    justifyContent: 'space-between',
+  },
+  circleInfoContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    margin: 20,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: `${ MAIN_GRAY_COLOR }`,
+  },
+  circleSelectBtn: {
+    marginTop: 10,
+    width: 100,
+    padding: 10,
+    backgroundColor: `${ MAIN_GRAY_COLOR }`,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    borderRadius: 4,
+    marginLeft: 10,
+  },
+  circleSelectBtnTitle: {
+    color: '#fff',
+    fontSize: 16,
   },
   text: {
-    color: '#000',
+    color: `${ MAIN_GRAY_COLOR }`,
+    fontSize: 18,
   },
   label: {
-    color: '#000',
+    color: `${ SUB_GRAY_COLOR }`,
+    fontSize: 14,
   },
   circleImage: {
     width: 100,
     height: 100,
+    borderWidth: 1,
+    borderColor: `${ MAIN_GRAY_COLOR }`,
+    padding: 5,
   },
   radioConatiner: {
     flexDirection: 'column',
-    alignItems: 'center',
+    marginTop: 15,
+    marginLeft: 15,
   },
   radioItem: {
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
+  },
+  radioValue: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 13,
+  },
+  title: {
+    color: `${ MAIN_GRAY_COLOR }`,
+    fontSize: 16,
+    marginLeft: 13,
+  },
+  radioButtonLabel: {
+    color: `${ MAIN_GRAY_COLOR }`,
+    fontSize: 14,
+  },
+  imageSelectContainer: {
+    marginRight: 30,
   },
   registerButton: {
-
+    backgroundColor: `${ MAIN_BLUE_COLOR }`,
+    marginHorizontal: 20,
+    marginBottom: 10,
+    padding: 10,
+    borderRadius: 100,
   },
+  registerButtonTitle: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 20,
+    textAlign: 'center',
+  }
 });
 
 export default CircleRegisterScreen;

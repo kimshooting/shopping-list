@@ -65,12 +65,6 @@ function ListItem({ data, navigation, budgetCriterion }) {
     getWorkDataWithPriority(title = '', priority = [ 1, 2, 3, 4, 5 ], checked = -1,
         order = true, circleId = data.circle_id, getCircleInfo = false)
         .then((result) => {
-          if (result.response[1] != undefined) {
-            if (result.response[1].title == '늘어나는 요우무') {
-              console.log('baseWork', JSON.stringify(result.response[1], null, 4));
-            }
-          }
-          
           setWorkDataList(result.response);
         });
   }

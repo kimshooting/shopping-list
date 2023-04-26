@@ -52,3 +52,10 @@ export const EXPORT_TARGET_ARCHIVE = documentDirectory + 'shared_data.zip';
 export const OK = 200;
 export const NO_SUCH_KEY = 534;
 export const DATA_IS_EMPTY = 562;
+
+// Color pallete (Style design)
+export const RED_MAIN_COLOR = '#e03131';
+export const MAIN_GRAY_COLOR = '#495057';
+export const SUB_GRAY_COLOR = '#868e96';
+export const MAIN_BLUE_COLOR = '#1971c2';
+export const SUB_BLUE_COLOR = '#74c0fc';
