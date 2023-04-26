@@ -84,7 +84,7 @@ function SettingsScreen({ navigation }) {
                   }
                 ]);
               } }>
-            <Text style={ styles.btnTitle }>데이터 완전 삭제</Text>
+            <Text style={ styles.btnTitle }>데이터 삭제</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

@@ -1,5 +1,5 @@
 import { StorageAccessFramework, documentDirectory, readAsStringAsync } from "expo-file-system";
-import { SHARED_DATA_ENTRY_FILENAME } from "../../data/constants";
+import { DEFAULT_IMAGE, SHARED_DATA_ENTRY_FILENAME } from "../../data/constants";
 import { insertRegisteredCircleData, truncateRegisteredCircle } from "../controller/registeredCircleController";
 import { getAllCircleDataBySpace } from "../controller/allCircleController";
 import { insertWorkData, truncateWorkData } from "../controller/workDataController";
@@ -13,7 +13,11 @@ export async function fetchSharedData(dir) {
   const workData = JSON.parse(await processData(rootDirectory, metadata.work_data_file));
   console.log(circleData);
   for (let data of circleData) {
-    data.circle_image_path = rootDirectory + data.circle_image_path;
+    if (data.circle_image_path == 'NO_IMAGE') {
+      data.circle_image_path = DEFAULT_IMAGE;
+    } else {
+      data.circle_image_path = rootDirectory + data.circle_image_path;
+    }
     const r = await getAllCircleDataBySpace(data.space);
     if (r.response.length == 0) {
       ToastAndroid.show('서클 데이터를 먼저 가져와 주세요', ToastAndroid.SHORT);
@@ -22,7 +26,11 @@ export async function fetchSharedData(dir) {
     data.circle_id = r.response[0].id;
   }
   for (let data of workData) {
-    data.image_path = rootDirectory + data.image_path;
+    if (data.image_path == 'NO_IMAGE') {
+      data.image_path = DEFAULT_IMAGE;
+    } else {
+      data.image_path = rootDirectory + data.image_path;
+    }
     const r = await getAllCircleDataBySpace(data.space);
     console.log('r', r);
     data.circle_id = r.response[0].id;

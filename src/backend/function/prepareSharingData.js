@@ -1,5 +1,5 @@
 import { copyAsync, deleteAsync, makeDirectoryAsync, writeAsStringAsync } from "expo-file-system";
-import { EXPORT_CIRCLE_DATA_FILENAME, EXPORT_CIRCLE_IMAGES_DIR, EXPORT_DATA_ROOT_DIR, EXPORT_ENTRY_FILENAME, EXPORT_IMAGE_FILES_DIR, EXPORT_TARGET_ARCHIVE, EXPORT_WORK_DATA_FILENAME, EXPORT_WORK_IMAGES_DIR } from "../../data/constants";
+import { DEFAULT_IMAGE, EXPORT_CIRCLE_DATA_FILENAME, EXPORT_CIRCLE_IMAGES_DIR, EXPORT_DATA_ROOT_DIR, EXPORT_ENTRY_FILENAME, EXPORT_IMAGE_FILES_DIR, EXPORT_TARGET_ARCHIVE, EXPORT_WORK_DATA_FILENAME, EXPORT_WORK_IMAGES_DIR } from "../../data/constants";
 import { getRegisteredCircleDataJoiningAllCircleData } from "../controller/registeredCircleController";
 import { getWorkData } from "../controller/workDataController";
 import { zip } from "react-native-zip-archive";
@@ -56,11 +56,18 @@ async function process(data, isCircleProcess) {
     console.log('imagePath', imagePath);
     const imageFilename = imagePath.split('/').pop();
     const targetFolder = isCircleProcess ? EXPORT_CIRCLE_IMAGES_DIR : EXPORT_WORK_IMAGES_DIR;
-    await copyAsync({
-      from: imagePath,
-      to: targetFolder + imageFilename
-    }).then((result) => console.log('copy:', imageFilename));
-    const toStore = isCircleProcess ? `image/circle/${ imageFilename }` : `image/work/${ imageFilename }`;
+    if (imagePath != DEFAULT_IMAGE) {
+      await copyAsync({
+        from: imagePath,
+        to: targetFolder + imageFilename
+      }).then((result) => console.log('copy:', imageFilename));
+    }
+    let toStore = '';
+    if (imagePath != DEFAULT_IMAGE) {
+      toStore = isCircleProcess ? `image/circle/${ imageFilename }` : `image/work/${ imageFilename }`;
+    } else {
+      toStore = 'NO_IMAGE';
+    }
     if (isCircleProcess) {
       data[i].circle_image_path = toStore;
     } else {
