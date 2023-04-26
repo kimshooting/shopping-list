@@ -2,6 +2,7 @@ import { readAsStringAsync } from 'expo-file-system';
 import { useEffect, useState } from 'react';
 import { Button, FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { insertAllCircleData, truncateAllCircleData } from '../backend/controller/allCircleController';
+import { MAIN_GRAY_COLOR } from '../data/constants';
 
 function FileSearchScreen({ route, navigation }) {
   const fileList = route.params.data;
@@ -62,12 +63,14 @@ function FileSearchScreen({ route, navigation }) {
 function Header({ data, navigation }) {
   const uri = data;
   return (
-    <Button
-        title='Select'
+    <TouchableOpacity
+        style={ styles.selectBtn }
         onPress={ () => { 
           loadData(uri, navigation);
           navigation.goBack();
-        } } />
+        } }>
+      <Text style={ styles.selectBtnTitle }>Select</Text>
+    </TouchableOpacity>
   )
 }
 
@@ -99,6 +102,22 @@ const styles = StyleSheet.create({
     fontSize: 18,
     padding: 12,
     backgroundColor: '#ced4da',
+  },
+  selectBtn: {
+    backgroundColor: `${ MAIN_GRAY_COLOR }`,
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+    marginBottom: 15,
+    paddingHorizontal: 100,
+    paddingVertical: 10,
+    borderRadius: 5,
+  },
+  selectBtnTitle: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '600',
   }
 });
 
