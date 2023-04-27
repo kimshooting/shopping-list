@@ -56,12 +56,14 @@ function HomeScreen({ navigation }) {
     } else {
       setPages(pageData);
     }
-    setPageIndexes(pIdx);
+    if (pIdx.length != pageIndexes.length) {
+      setPageIndexes(pIdx);
+    }
   }, [ registeredCircleList ]);
 
   useEffect(() => {
     dispatch(setHomeCurrentPage(0));
-  }, [ pages ]);
+  }, [ pageIndexes ]);
 
   return (
     <SafeAreaView style={ styles.container }>
