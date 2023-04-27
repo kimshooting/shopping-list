@@ -330,19 +330,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     marginLeft: 15,
-    gap: 30,
+    gap: 15,
   },
   openBtn: {
     backgroundColor: `${ SUB_BLUE_COLOR }`,
     paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: 15,
     borderRadius: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   openBtnTitle: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 16,
   },
   budgetContainer: {
     justifyContent: 'center',

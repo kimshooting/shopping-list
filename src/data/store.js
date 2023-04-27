@@ -78,9 +78,18 @@ const pickedCircle = createSlice({
 const currentPage = createSlice({
   name: 'currentPage',
   initialState: 0,
-  reducers: 0,
   reducers: {
     setCurrentPage(state, action) {
+      return action.payload;
+    }
+  }
+});
+
+const homeCurrentPage = createSlice({
+  name: 'homeCurrentPage',
+  initialState: 0,
+  reducers: {
+    setHomeCurrentPage(state, action) {
       return action.payload;
     }
   }
@@ -96,6 +105,7 @@ export default configureStore({
     isWorkTitleVisible: isWorkTitleVisible.reducer,
     pickedCircle: pickedCircle.reducer,
     currentPage: currentPage.reducer,
+    homeCurrentPage: homeCurrentPage.reducer,
   }
 });
 
@@ -107,3 +117,4 @@ export const { setIsPriceVisible } = isPriceVisible.actions;
 export const { setIsWorkTitleVisible } = isWorkTitleVisible.actions;
 export const { setPickedCircle } = pickedCircle.actions;
 export const { setCurrentPage } = currentPage.actions;
+export const { setHomeCurrentPage } = homeCurrentPage.actions;

@@ -48,13 +48,6 @@ function CircleSelectScreen({ navigation }) {
     setPageIndexes(pIdx);
   }, [ list ]);
 
-  const selectedFileInitialStateData = {
-    id: -1,
-    space: '',
-    penname: '',
-    circle_name: '',
-  }
-
   const pickedCircle = useSelector((state) => state.pickedCircle);
 
   return (
@@ -163,6 +156,12 @@ function Page({ pageIndex }) {
 
 function onSelectComplete(dispatch, navigation, selectedData) {
   dispatch(setSelectedCircle(selectedData));
+  dispatch(setPickedCircle({
+    id: -1,
+    space: '',
+    penname: '',
+    circle_name: '',
+  }));
   navigation.goBack();
 }
 

@@ -3,7 +3,7 @@ import { DEFAULT_IMAGE, MAIN_BLUE_COLOR, MAIN_GRAY_COLOR, PRIORITY_COLOR_SQUARE_
 import { useEffect, useState } from "react";
 import HomeToolbar from "../toolbar/HomeToolbar";
 import { useDispatch, useSelector } from "react-redux";
-import { setCurrentBudget } from "../data/store";
+import { setCurrentBudget, setHomeCurrentPage } from "../data/store";
 import { getRegisteredCircleData } from "../backend/controller/registeredCircleController";
 import { getWorkDataWithPriority, updateWorkData } from "../backend/controller/workDataController";
 
@@ -18,8 +18,6 @@ function HomeScreen({ navigation }) {
          });
   }, [ currentOrderMode ]);
 
-  const [ budgetCriterion, setBudgetCriterion ] = useState([ ]);
-
   useEffect(() => {
     const focusHandler = navigation.addListener('focus', () => {
       console.log('refresh');
@@ -31,14 +29,76 @@ function HomeScreen({ navigation }) {
     return focusHandler;
   }, [ navigation ]);
 
+  const currentPage = useSelector((state) => state.homeCurrentPage);
+  const [ pages, setPages ] = useState([ [ ] ]);
+  const [ pageIndexes, setPageIndexes ] = useState([ ]);
+  const PAGE_CONTENT_LENGTH = 10;
+  const dispatch = useDispatch();
+  useEffect(() => {
+    let buffer = [ ];
+    const pageData = [ ];
+    for (let i = 1; i < registeredCircleList.length; i++) {
+      buffer.push(registeredCircleList[i - 1]);
+      if (i % PAGE_CONTENT_LENGTH == 0) {
+        pageData.push(buffer);
+        buffer = [ ];
+      }
+    }
+    if (buffer.length > 0) {
+      pageData.push(buffer);
+    }
+    const pIdx = [ ];
+    for(let i = 0; i < pageData.length; i++) {
+      pIdx.push(i);
+    }
+    if (pageData.length == 0) {
+      setPages([ [ ] ]);
+    } else {
+      setPages(pageData);
+    }
+    setPageIndexes(pIdx);
+  }, [ registeredCircleList ]);
+
+  useEffect(() => {
+    dispatch(setHomeCurrentPage(0));
+  }, [ pages ]);
+
   return (
     <SafeAreaView style={ styles.container }>
       <HomeToolbar />
+      <View style={ { height: 50, alignSelf: 'flex-start' } }>
+        <FlatList
+            data={ pageIndexes }
+            renderItem={ ({item}) => <Page pageIndex={ item } /> }
+            keyExtractor={ (item) => item }
+            contentContainerStyle={ styles.pageContainer }
+            horizontal />
+      </View>
       <FlatList
-          data={ registeredCircleList }
+          data={ pages[currentPage] }
           renderItem={ ({ item }) => <ListItem data={ item } navigation={ navigation } /> }
           keyExtractor={ (item) => item.space } />
     </SafeAreaView>
+  );
+}
+
+function Page({ pageIndex }) {
+  const currentPage = useSelector((state) => state.homeCurrentPage);
+  const isCurrentPage = pageIndex == currentPage;
+  const pageNumberSquareStyleObj = isCurrentPage
+      ? [ styles.pageNumberSquare, { backgroundColor: `${ MAIN_BLUE_COLOR }` } ]
+      : styles.pageNumberSquare;
+  const pageNumberStyleObj = isCurrentPage
+      ? [ styles.pageNumber, { color: '#fff', fontWeight: '600' } ]
+      : styles.pageNumber;
+  const pageNumber = pageIndex + 1;
+  const dispatch = useDispatch();
+  return (
+    <TouchableOpacity
+        style={ pageNumberSquareStyleObj }
+        onPress={ () => dispatch(setHomeCurrentPage(pageIndex)) }>
+      <Text style={ pageNumberStyleObj }>{ pageNumber }</Text>
+    </TouchableOpacity>
   );
 }
 
@@ -223,6 +283,22 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 50,
     height: 50,
+  },
+  pageContainer: {
+    gap: 10,
+    alignItems: 'center',
+  },
+  pageNumberSquare: {
+    width: 30,
+    height: 30,
+    borderWidth: 1,
+    borderColor: `${ MAIN_GRAY_COLOR }`,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pageNumber: {
+    color: `${ MAIN_GRAY_COLOR }`,
+    fontSize: 14,
   },
 });
 
