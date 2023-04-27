@@ -1,5 +1,5 @@
 import { FlatList, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { DEFAULT_IMAGE, MAIN_BLUE_COLOR, MAIN_GRAY_COLOR, PRIORITY_COLOR_SQUARE_WIDTH_AND_SIZE, SUB_GRAY_COLOR } from "../data/constants";
+import { DEFAULT_IMAGE, MAIN_BLUE_COLOR, MAIN_GRAY_COLOR, PRIORITY_COLOR_SQUARE_WIDTH_AND_SIZE, REGISTERED_TABLE, SUB_GRAY_COLOR } from "../data/constants";
 import { useEffect, useState } from "react";
 import HomeToolbar from "../toolbar/HomeToolbar";
 import { useDispatch, useSelector } from "react-redux";
@@ -37,7 +37,7 @@ function HomeScreen({ navigation }) {
   useEffect(() => {
     let buffer = [ ];
     const pageData = [ ];
-    for (let i = 1; i < registeredCircleList.length; i++) {
+    for (let i = 1; i <= registeredCircleList.length; i++) {
       buffer.push(registeredCircleList[i - 1]);
       if (i % PAGE_CONTENT_LENGTH == 0) {
         pageData.push(buffer);
